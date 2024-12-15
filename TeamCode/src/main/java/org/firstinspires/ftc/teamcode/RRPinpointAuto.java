@@ -13,6 +13,8 @@ public class RRPinpointAuto extends OpMode {
     public void init() {
         // instantiate the MecanumDrive at a particular pose.
         Pose2d intialPose = new Pose2d(-30, -60, Math.toRadians(90));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, intialPose);
+
     }
 
     @Override
