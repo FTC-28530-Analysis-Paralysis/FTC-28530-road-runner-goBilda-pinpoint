@@ -102,7 +102,7 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
         increase when you move the robot forward. And the Y (strafe) pod should increase when
         you move the robot to the left.
          */
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
 
         /*
@@ -120,7 +120,7 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
         telemetry.addData("X offset", odo.getXOffset());
         telemetry.addData("Y offset", odo.getYOffset());
         telemetry.addData("Device Version Number:", odo.getDeviceVersion());
-        telemetry.addData("Device SCalar", odo.getYawScalar());
+        telemetry.addData("Device Scalar", odo.getYawScalar());
         telemetry.update();
 
         // Wait for the game to start (driver presses START)
