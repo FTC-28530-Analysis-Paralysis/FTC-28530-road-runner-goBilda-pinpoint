@@ -69,7 +69,7 @@ public class RobotHardware {
     }
     // This is how the opMode tells the RobotHardware class when it is active, if there are any loops in the hardware
     // class they should check this to avoid getting stuck in a loop when the stop button is hit
-    public static boolean opModeActive = false;
+    public boolean opModeActive = false;
 
     // Define Motor and Servo objects  (Make them private so they can't be accessed externally)
     private DcMotor arm = null;
