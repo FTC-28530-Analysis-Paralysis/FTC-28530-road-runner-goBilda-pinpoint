@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -10,6 +11,8 @@ public class TeleopTest extends OpMode {
     // Create a org.firstinspires.ftc.teamcode.RobotHardware object to be used to access robot hardware.
     // Prefix any hardware functions with "robot." to access this class.
     RobotHardware robot = new RobotHardware(this, telemetry);
+    private Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(-90));
+    MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
     double forward;
     double turn;
@@ -55,15 +58,14 @@ public class TeleopTest extends OpMode {
         // In this mode the Left stick moves the robot fwd and back and left and right, the Right stick turns left and right.
         // This way it's easy to drive diagonally and have good control of heading.
 
-        /// Mr. Morris: Alternatively we could use right trigger for forward, left trigger for reverse, left_stick_x for strafing and right_stick_x for turning,
-        ///             then left/right stick_y could be free for arms or something
-        brake = Range.clip(gamepad1.right_stick_y, -1, 0);
+        /// Mr. Morris: Add brake functionality by holding the left trigger varying amounts.
+        brake = gamepad1.left_trigger; // 0 to 1
         forward = -gamepad1.left_stick_y * (1 - brake);
-        strafe = gamepad1.left_stick_x * (1 - brake);
+        strafe = gamepad1.left_stick_x * (1 -brake);
         turn = gamepad1.right_stick_x * (1 - brake);
 
         // Combine forward and turn for blended motion. Use org.firstinspires.ftc.teamcode.RobotHardware class
-        robot.mechanumDrive(forward, strafe, turn);
+        drive.setDrivePowers(forward, strafe, turn);
     }
 
     // This method will be called once, when this OpMode is stopped.
