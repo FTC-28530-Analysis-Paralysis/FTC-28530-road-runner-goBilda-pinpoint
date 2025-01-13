@@ -1,14 +1,16 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.testing;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.teamcode.RoadRunnerFiles.MecanumDrive;
+import org.firstinspires.ftc.teamcode.in_development.RobotHardware;
 
 
 public class TeleopTest extends OpMode {
 
-    // Create a org.firstinspires.ftc.teamcode.RobotHardware object to be used to access robot hardware.
+    // Create a org.firstinspires.ftc.teamcode.in_development.RobotHardware object to be used to access robot hardware.
     // Prefix any hardware functions with "robot." to access this class.
     RobotHardware robot = new RobotHardware(this, telemetry);
     private Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(-90));
@@ -64,7 +66,7 @@ public class TeleopTest extends OpMode {
         strafe = gamepad1.left_stick_x * (1 -brake);
         turn = gamepad1.right_stick_x * (1 - brake);
 
-        // Combine forward and turn for blended motion. Use org.firstinspires.ftc.teamcode.RobotHardware class
+        // Combine forward and turn for blended motion. Use org.firstinspires.ftc.teamcode.in_development.RobotHardware class
         drive.setDrivePowers(forward, strafe, turn);
     }
 

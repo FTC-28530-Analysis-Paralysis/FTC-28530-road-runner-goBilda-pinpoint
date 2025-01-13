@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.in_development;
 /* Copyright (c) 2022 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -52,7 +52,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with *exactly the same name*.
  *
- * Or... In OnBot Java, add a new file named org.firstinspires.ftc.teamcode.RobotHardware.java, select this sample, and select Not an OpMode.
+ * Or... In OnBot Java, add a new file named org.firstinspires.ftc.teamcode.in_development.RobotHardware.java, select this sample, and select Not an OpMode.
  * Also add a new OpMode, select the sample org.firstinspires.ftc.teamcode.CompetitionTeleop.java, and select TeleOp.
  *
  */
