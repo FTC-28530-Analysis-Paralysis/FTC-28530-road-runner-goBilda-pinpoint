@@ -133,9 +133,9 @@ public class CompetitionTeleopModified extends LinearOpMode {
 
     double slidePosition = SLIDE_COLLAPSED;
 
-    double cycletime = 0;
-    double looptime = 0;
-    double oldtime = 0;
+    double cycleTime = 0;
+    double loopTime = 0;
+    double oldTime = 0;
 
     double armSlideComp = 0;
 
@@ -348,16 +348,16 @@ public class CompetitionTeleopModified extends LinearOpMode {
             We have our SlidePosition variable, which we increment or decrement for every cycle (every
             time our main robot code runs) that we're holding the button. Now since every cycle can take
             a different amount of time to complete, and we want the lift to move at a constant speed,
-            we measure how long each cycle takes with the cycletime variable. Then multiply the
-            speed we want the lift to run at (in mm/sec) by the cycletime variable. There's no way
+            we measure how long each cycle takes with the cycleTime variable. Then multiply the
+            speed we want the lift to run at (in mm/sec) by the cycleTime variable. There's no way
             that our lift can move 2800mm in one cycle, but since each cycle is only a fraction of a second,
             we are only incrementing it a small amount each cycle. */
 
             /* TODO: Mr. Morris: The first time I read their code I didn't get the elegance of their solution.
              *                   We might want to try something similar to their original rather than what we
-             *                   have now. But it will need testing. This would be how I would rewrite this for
+             *                   have now. But it will need testing. This would be how I would rewrite it for
              *                   analog (stick) input:
-             *                   slidePosition += gamepad2.right_stick_x * 2800 * cycletime;
+             *  slidePosition += gamepad2.right_stick_x * 2800 * cycleTime;
              */
 
             slidePosition += gamepad2.right_stick_x * 25; //Slide speed
@@ -387,17 +387,16 @@ public class CompetitionTeleopModified extends LinearOpMode {
             power to match the inverse of the left stick y. */
 
             /* This is how we check our loop time. We create three variables:
-            looptime is the current time when we hit this part of the code
-            cycletime is the amount of time in seconds our current loop took
-            oldtime is the time in seconds that the previous loop started at
-
-            we find cycletime by just subtracting the old time from the current time.
-            For example, lets say it is 12:01.1, and then a loop goes by and it's 12:01.2.
-            We can take the current time (12:01.2) and subtract the oldtime (12:01.1) and we're left
-            with just the difference, 0.1 seconds. */
-            looptime = getRuntime();
-            cycletime = looptime-oldtime;
-            oldtime = looptime;
+                loopTime is the current time when we hit this part of the code.
+                cycleTime is the amount of time in seconds our current loop took.
+                oldTime is the time in seconds that the previous loop started at.
+            We find cycleTime by just subtracting the old time from the current time. For example,
+            lets say it is 12:01.1, and then a loop goes by and it's 12:01.2. We can take the current
+            time (12:01.2) and subtract the oldTime (12:01.1) and we're left with just the difference,
+            0.1 seconds. */
+            loopTime = getRuntime();
+            cycleTime = loopTime - oldTime;
+            oldTime = loopTime;
 
             /* send telemetry to the driver of the arm's current position and target position */
             telemetry.addData("arm Target Position: ", armMotor.getTargetPosition());
@@ -425,6 +424,21 @@ public class CompetitionTeleopModified extends LinearOpMode {
         }
     }
 
+    /**
+     * Mr. Morris:
+     * This method is a finite state machine implementation to track the possible positions of the arm, slide, and wrist. The
+     * main reason this was implemented is because Mahlon asked for a time delay when moving from the HIGH_BASKET down. I
+     * interpreted this as hitting the button to go to the COLLECT, however it could be adjusted to behave how the drivers want.
+     * Currently it has a timer in the COLLECT case so that the arm delays half a second while the slide retracts. There are
+     * certainly simpler solutions to this problem, but this one is more robust and gives us the framework to make all sorts of
+     * fancy transitions between states while still being readable. The magic happens at the top of the while(opModeIsActive())
+     * loop. It calls this method to update the arm state every loop. Later in the program buttons will change the currentState
+     * and the next program loop when the method is called it will update the positions. By being called every program loop
+     * regardless of button press it can track timers and even flow from one arm state to another if we want it to.
+     * @param state This is an enum of ArmState type. enums are a way of creating a sort of list of options that can be chosen
+     *              by name in a switch statement like this. This makes code more readable and less prone to errors. It is a
+     *              description of a position the arm, slide, and wrist can be in (e.g. FOLDED, COLLECT, etc.)
+     */
     private void updateArmState(ArmState state){
         switch (state){
             case HIGH_BASKET:
@@ -442,10 +456,9 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 break;
             case CLEAR_BARRIER:
                 armPosition = ARM_CLEAR_BARRIER;
-
                 break;
             default:
-                telemetry.addData("Error", "Invalid sequence state: " + state);
+                telemetry.addData("Error", "Invalid arm state: " + state);
                 telemetry.update();
                 throw new IllegalArgumentException("Invalid arm state: " + state);
         }
