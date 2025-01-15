@@ -110,7 +110,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     final double ARM_WINCH_ROBOT           = 10  * ARM_TICKS_PER_DEGREE;
 
     /// Mr. Morris: These are the arm states that the gamepad1 dpad buttons will toggle through
-    private enum ArmState{HIGH_BASKET, COLLECT, FOLDED, CLEAR_BARRIER}
+    private enum ArmState{HIGH_BASKET, COLLECT, FOLDED, CLEAR_BARRIER, IDLE}
     private ArmState currentArmState = ArmState.FOLDED;
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
@@ -444,18 +444,27 @@ public class CompetitionTeleopModified extends LinearOpMode {
             case HIGH_BASKET:
                 armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
                 slidePosition = SLIDE_SCORING_IN_HIGH_BASKET;
+                state = ArmState.IDLE;
                 break;
             case COLLECT:
                 slidePosition = SLIDE_COLLAPSED;
-                if (sequenceTimer.seconds() > 0.5) armPosition = ARM_COLLECT;
+                if (sequenceTimer.seconds() > 0.5)
+                {
+                    armPosition = ARM_COLLECT;
+                    state = ArmState.IDLE;
+                }
                 break;
             case FOLDED:
                 slidePosition = SLIDE_COLLAPSED;
                 intake.setPower(INTAKE_OFF);
                 wrist.setPosition(WRIST_FOLDED_IN);
+                state = ArmState.IDLE;
                 break;
             case CLEAR_BARRIER:
                 armPosition = ARM_CLEAR_BARRIER;
+                state = ArmState.IDLE;
+                break;
+            case IDLE:
                 break;
             default:
                 telemetry.addData("Error", "Invalid arm state: " + state);
