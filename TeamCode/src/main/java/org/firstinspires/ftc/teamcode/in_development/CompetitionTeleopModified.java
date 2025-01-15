@@ -291,8 +291,8 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 currentArmState = ArmState.CLEAR_BARRIER;
             }
 
-            else if (gamepad1.dpad_right){
-                /* This lowers the arm to the ground and turns on the intake wheels */
+            else if (gamepad1.dpad_down){
+                /* This lowers the arm to the ground */
                 sequenceTimer.reset();
                 currentArmState = ArmState.COLLECT;
             }
@@ -302,7 +302,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 currentArmState = ArmState.HIGH_BASKET;
             }
 
-            else if (gamepad1.dpad_down){
+            else if (gamepad1.dpad_right){
                 /* this moves the arm down, brings the slide in, and folds the wrist in */
                 updateArmState(ArmState.FOLDED);
             }
@@ -438,6 +438,8 @@ public class CompetitionTeleopModified extends LinearOpMode {
      * @param state This is an enum of ArmState type. enums are a way of creating a sort of list of options that can be chosen
      *              by name in a switch statement like this. This makes code more readable and less prone to errors. It is a
      *              description of a position the arm, slide, and wrist can be in (e.g. FOLDED, COLLECT, etc.)
+     *
+     * TODO: Make each state move to idle after a few seconds so that they don't overwrite the other gamepad control
      */
     private void updateArmState(ArmState state){
         switch (state){
