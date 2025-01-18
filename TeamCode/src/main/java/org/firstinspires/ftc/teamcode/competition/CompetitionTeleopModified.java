@@ -57,7 +57,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html#field-centric
  */
 
-@TeleOp(name="Competition-Teleop", group="In_Development")
+@TeleOp(name="Competition-Teleop-Modified", group="In_Development")
 //@Disabled
 public class CompetitionTeleopModified extends LinearOpMode {
 
