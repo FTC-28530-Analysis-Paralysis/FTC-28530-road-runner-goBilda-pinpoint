@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.RoadRunnerFiles.PinpointDrive;
 
 @Autonomous(name = "RR Pinpoint Auto", group = "RoadRunner")
-@Disabled
+//@Disabled
 public class RRPinpointAuto extends OpMode {
 
     private PinpointDrive drive;

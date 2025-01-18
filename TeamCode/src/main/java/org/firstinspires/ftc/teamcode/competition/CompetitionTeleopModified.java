@@ -277,7 +277,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 intake.setPower(INTAKE_OFF);
             }
 
-            armPosition = armPosition - gamepad2.left_stick_y * 25; //Arm speed
+            armPosition = armPosition - gamepad2.left_stick_y * 30; //Arm speed
 
             /* Here we implement a set of if else statements to set our arm to different scoring positions.
             We check to see if a specific button is pressed, and then move the arm (and sometimes
