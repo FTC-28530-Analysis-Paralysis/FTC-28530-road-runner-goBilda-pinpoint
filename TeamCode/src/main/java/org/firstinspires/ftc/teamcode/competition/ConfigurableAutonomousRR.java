@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.RoadRunnerFiles.PinpointDrive;
@@ -63,6 +64,8 @@ public class ConfigurableAutonomousRR extends LinearOpMode {
     double  startingPause = 0;
     private PinpointDrive drive;
     private Pose2d initialPose;
+    final double WRIST_FOLDED_OUT  = 0.2;
+    Servo wrist = null;
 
     private DcMotor arm = null;
     @Override
@@ -81,6 +84,8 @@ public class ConfigurableAutonomousRR extends LinearOpMode {
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION); // makes the arm be able to move
         arm.setPower(.1); // gives the arm power
 
+        wrist  = hardwareMap.get(Servo.class, "wrist");
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -88,7 +93,7 @@ public class ConfigurableAutonomousRR extends LinearOpMode {
         // Wait for the game to start (driver presses START)
         waitForStart();
         runtime.reset();
-
+        wrist.setPosition(WRIST_FOLDED_OUT);
         if(isLeftStart){
             // instantiate the PinpointDrive at the center of the second-from-left tile
             initialPose = new Pose2d(37, 61.7, Math.toRadians(-90));
@@ -98,15 +103,15 @@ public class ConfigurableAutonomousRR extends LinearOpMode {
                     .lineToX(49)
                     .splineToLinearHeading(new Pose2d(37,35,Math.toRadians(-90)), Math.toRadians(-90))
                     .lineToY(17)
-                    .splineToLinearHeading(new Pose2d(40,12,Math.toRadians(160)), Math.toRadians(75))
+                    .splineToLinearHeading(new Pose2d(40,12,Math.toRadians(-110)), Math.toRadians(75))
                     .setTangent(Math.toRadians(75))
                     .lineToY(58)
                     .lineToY(12)
-                    .splineToLinearHeading(new Pose2d(53,12,Math.toRadians(180)), Math.toRadians(85))
+                    .splineToLinearHeading(new Pose2d(53,12,Math.toRadians(-90)), Math.toRadians(85))
                     .setTangent(Math.toRadians(85))
                     .lineToY(55)
                     .lineToY(12)
-                    .splineToLinearHeading(new Pose2d(61,10,Math.toRadians(180)), Math.toRadians(90))
+                    .splineToLinearHeading(new Pose2d(61,10,Math.toRadians(-90)), Math.toRadians(90))
                     .lineToY(46)
                     .splineToLinearHeading(new Pose2d(25, 12, Math.toRadians(180)), Math.toRadians(160))
                     .build());
@@ -119,14 +124,14 @@ public class ConfigurableAutonomousRR extends LinearOpMode {
                     .lineToX(-49)
                     .splineToLinearHeading(new Pose2d(-35,32,Math.toRadians(-90)), Math.toRadians(-90))
                     .lineToY(20)
-                    .splineToLinearHeading(new Pose2d(-45,12,Math.toRadians(0)), Math.toRadians(90))
+                    .splineToLinearHeading(new Pose2d(-45,12,Math.toRadians(-90)), Math.toRadians(90))
                     .lineToY(53)
                     .lineToY(12)
-                    .splineToLinearHeading(new Pose2d(-53,10,Math.toRadians(0)), Math.toRadians(90))
+                    .splineToLinearHeading(new Pose2d(-53,10,Math.toRadians(-90)), Math.toRadians(90))
                     .lineToY(53)
                     .lineToY(12)
-                    .splineToLinearHeading(new Pose2d(-61,10,Math.toRadians(0)), Math.toRadians(90))
-                    .lineToY(50)
+                    .splineToLinearHeading(new Pose2d(-61,10,Math.toRadians(-90)), Math.toRadians(90))
+                    .lineToY(55)
                     .build());
         }
 

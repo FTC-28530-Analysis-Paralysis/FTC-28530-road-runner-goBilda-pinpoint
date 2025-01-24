@@ -129,7 +129,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
 
     final double SLIDE_COLLAPSED = 0 * SLIDE_TICKS_PER_MM;
     final double SLIDE_SCORING_IN_LOW_BASKET = 0 * SLIDE_TICKS_PER_MM;
-    final double SLIDE_SCORING_IN_HIGH_BASKET = 450 * SLIDE_TICKS_PER_MM;
+    final double SLIDE_SCORING_IN_HIGH_BASKET = 420 * SLIDE_TICKS_PER_MM;
 
     double slidePosition = SLIDE_COLLAPSED;
 
@@ -299,6 +299,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
 
             else if (gamepad1.dpad_up){
                 /* This raises and extends the arm up to score a sample in the high basket */
+                sequenceTimer.reset();
                 currentArmState = ArmState.HIGH_BASKET;
             }
 
@@ -446,8 +447,10 @@ public class CompetitionTeleopModified extends LinearOpMode {
         switch (state){
             case HIGH_BASKET:
                 armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
-                slidePosition = SLIDE_SCORING_IN_HIGH_BASKET;
-                currentArmState = ArmState.IDLE;
+                if (sequenceTimer.seconds() > 0.7) {
+                    slidePosition = SLIDE_SCORING_IN_HIGH_BASKET;
+                    currentArmState = ArmState.IDLE;
+                }
                 break;
             case COLLECT:
                 slidePosition = SLIDE_COLLAPSED;
