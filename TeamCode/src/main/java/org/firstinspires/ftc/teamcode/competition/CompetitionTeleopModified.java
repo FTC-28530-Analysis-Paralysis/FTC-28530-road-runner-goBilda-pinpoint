@@ -68,7 +68,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     public DcMotor  leftBackDrive    = null;
     public DcMotor  rightBackDrive   = null;
     public DcMotor  armMotor         = null; //the arm motor
-    public DcMotor slideMotor = null;
+    public DcMotor  slideMotor = null;
     public CRServo  intake           = null; //the active intake servo
     public Servo    wrist            = null; //the wrist servo
     private int sequenceState = 0;
@@ -108,6 +108,10 @@ public class CompetitionTeleopModified extends LinearOpMode {
     final double ARM_SCORE_SAMPLE_IN_HIGH  = 99  * ARM_TICKS_PER_DEGREE;
     final double ARM_ATTACH_HANGING_HOOK   = 110 * ARM_TICKS_PER_DEGREE;
     final double ARM_WINCH_ROBOT           = 10  * ARM_TICKS_PER_DEGREE;
+
+    static double ARM_RETRACTED_LENGTH_MM = 495;
+    static double MAX_FORWARD_EXTENSION_MM = (42 - 5.5) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
+                                                                // 5.5 inches is how far back we need to reach for the ascent
 
     /// Mr. Morris: These are the arm states that the gamepad1 dpad buttons will toggle through
     private enum ArmState{HIGH_BASKET, COLLECT, FOLDED, CLEAR_BARRIER, IDLE}
@@ -373,6 +377,9 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 slidePosition = 0;
             }
 
+            if (slidePosition > maxSlideLengthFromAngle()){
+                slidePosition = maxSlideLengthFromAngle();
+            }
             slideMotor.setTargetPosition((int) (slidePosition));
 
             ((DcMotorEx) slideMotor).setVelocity(2100);
@@ -436,25 +443,27 @@ public class CompetitionTeleopModified extends LinearOpMode {
      * fancy transitions between states while still being readable. The magic happens at the top of the while(opModeIsActive())
      * loop. It calls this method to update the arm state every loop. Later in the program buttons will change the currentState
      * and the next program loop when the method is called it will update the positions. By being called every program loop
-     * regardless of button press it can track timers and even flow from one arm state to another if we want it to.
-     * @param state This is an enum of ArmState type. enums are a way of creating a sort of list of options that can be chosen
+     * regardless of button press it can track timers and even flow from one arm state to another if we want it to. Currently I
+     * have each of the states moving to the IDLE state after finishing so that gamepad2 can change the arm and slide positions.
+     * Without the IDLE state, updateArmState constantly overrides the gamepad2 controller input.
+     * @param state This is an enum of ArmState type. Enums are a way of creating a sort of list of options that can be chosen
      *              by name in a switch statement like this. This makes code more readable and less prone to errors. It is a
      *              description of a position the arm, slide, and wrist can be in (e.g. FOLDED, COLLECT, etc.)
-     *
-     * TODO: Make each state move to idle after a few seconds so that they don't overwrite the other gamepad control
      */
     private void updateArmState(ArmState state){
         switch (state){
             case HIGH_BASKET:
+                // We have a delay where the arm rotates first, then slides out to prevent the robot from tipping
                 armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
-                if (sequenceTimer.seconds() > 0.7) {
+                if (sequenceTimer.seconds() > 0.7) { // Adjust this time as needed to prevent robot tipping
                     slidePosition = SLIDE_SCORING_IN_HIGH_BASKET;
                     currentArmState = ArmState.IDLE;
                 }
                 break;
             case COLLECT:
+                // We have a delay where the arm slides in first, then rotates to prevent collision with the high basket
                 slidePosition = SLIDE_COLLAPSED;
-                if (sequenceTimer.seconds() > 0.5){
+                if (sequenceTimer.seconds() > 0.5){ // Adjust this time as needed to prevent collision
                     armPosition = ARM_COLLECT;
                     currentArmState = ArmState.IDLE;
                 }
@@ -469,6 +478,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 armPosition = ARM_CLEAR_BARRIER;
                 currentArmState = ArmState.IDLE;
                 break;
+            // TODO: Consider a Hang routine where a button press automates the motor movements and timing for the hang routine.
             case IDLE:
                 break;
             default:
@@ -476,5 +486,12 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 telemetry.update();
                 throw new IllegalArgumentException("Invalid arm state: " + state);
         }
+    }
+
+    // TODO: TEST!
+    private double maxSlideLengthFromAngle(){
+        double normalizedArmAngle = armMotor.getCurrentPosition()/ARM_TICKS_PER_DEGREE - 33.3; // Arm starts at 33.3 degrees below straight forward.
+        double hypotenuse = MAX_FORWARD_EXTENSION_MM / Math.cos(Math.toRadians(normalizedArmAngle)); // Using trigonometry to calculate total length
+        return hypotenuse - ARM_RETRACTED_LENGTH_MM;
     }
 }

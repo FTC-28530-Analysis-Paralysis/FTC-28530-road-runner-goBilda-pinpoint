@@ -54,10 +54,9 @@ import org.firstinspires.ftc.teamcode.RoadRunnerFiles.PinpointDrive;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="ConfigurableAutonomousRR", group="0Competition")
+@Autonomous(name="ConfigurableAutonomousRR", group="0Competition", preselectTeleOp = "CompetitionTeleopModified") // I added preselectTeleop so you don't have to select the next one manually in match
 //@Disabled
 public class ConfigurableAutonomousRR extends LinearOpMode {
-
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     boolean isLeftStart = true;
