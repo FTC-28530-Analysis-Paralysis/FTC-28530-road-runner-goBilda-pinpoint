@@ -377,8 +377,9 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 slidePosition = 0;
             }
 
-            if (slidePosition > maxSlideLengthFromAngle()){
-                slidePosition = maxSlideLengthFromAngle();
+            // If desired slidePosition is outside the 42" horizontal extension, limit it.
+            if (slidePosition > maxSlideLengthForGivenAngle() * SLIDE_TICKS_PER_MM){ // Convert from mm to encoder ticks
+                slidePosition = maxSlideLengthForGivenAngle() * SLIDE_TICKS_PER_MM;  // Convert from mm to encoder ticks
             }
             slideMotor.setTargetPosition((int) (slidePosition));
 
@@ -489,9 +490,9 @@ public class CompetitionTeleopModified extends LinearOpMode {
     }
 
     // TODO: TEST!
-    private double maxSlideLengthFromAngle(){
+    private double maxSlideLengthForGivenAngle(){
         double normalizedArmAngle = armMotor.getCurrentPosition()/ARM_TICKS_PER_DEGREE - 33.3; // Arm starts at 33.3 degrees below straight forward.
         double hypotenuse = MAX_FORWARD_EXTENSION_MM / Math.cos(Math.toRadians(normalizedArmAngle)); // Using trigonometry to calculate total length
-        return hypotenuse - ARM_RETRACTED_LENGTH_MM;
+        return hypotenuse - ARM_RETRACTED_LENGTH_MM; // Total arm length minus retracted length leaves the slide extension amount
     }
 }
