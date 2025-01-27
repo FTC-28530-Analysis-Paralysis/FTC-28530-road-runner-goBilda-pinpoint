@@ -135,7 +135,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     final double SLIDE_SCORING_IN_LOW_BASKET = 0 * SLIDE_TICKS_PER_MM;
     final double SLIDE_SCORING_IN_HIGH_BASKET = 420 * SLIDE_TICKS_PER_MM;
 
-    double slidePosition = SLIDE_COLLAPSED;
+    double slideTargetPosition = SLIDE_COLLAPSED;
 
     double cycleTime = 0;
     double loopTime = 0;
@@ -325,7 +325,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
            is above 45Â°, then we just set armSlideComp to 0. It's only if it's below 45Â° that we set it
            to a value. */
             if (armPosition < 45 * ARM_TICKS_PER_DEGREE){
-                armSlideComp = (0.25568 * slidePosition);
+                armSlideComp = (0.25568 * slideTargetPosition);
             }
             else{
                 armSlideComp = 0;
@@ -362,26 +362,24 @@ public class CompetitionTeleopModified extends LinearOpMode {
              *                   We might want to try something similar to their original rather than what we
              *                   have now. But it will need testing. This would be how I would rewrite it for
              *                   analog (stick) input:
-             *  slidePosition += gamepad2.right_stick_x * 2800 * cycleTime;
+             *  slideTargetPosition += gamepad2.right_stick_x * 2800 * cycleTime;
              */
 
-            slidePosition += gamepad2.right_stick_x * 25; //Slide speed
+            slideTargetPosition += gamepad2.right_stick_x * 25; //Slide speed
 
             /* here we check to see if the lift is trying to go higher than the maximum extension.
             if it is, we set the variable to the max. */
-            if (slidePosition > SLIDE_SCORING_IN_HIGH_BASKET){
-                slidePosition = SLIDE_SCORING_IN_HIGH_BASKET;
+            if (slideTargetPosition > SLIDE_SCORING_IN_HIGH_BASKET){
+                slideTargetPosition = SLIDE_SCORING_IN_HIGH_BASKET;
             }
             //same as above, we see if the lift is trying to go below 0, and if it is, we set it to 0.
-            if (slidePosition < 0){
-                slidePosition = 0;
+            if (slideTargetPosition < 0){
+                slideTargetPosition = 0;
             }
 
-            // If desired slidePosition is outside the 42" horizontal extension, limit it.
-            if (slidePosition > maxSlideLengthForGivenAngle() * SLIDE_TICKS_PER_MM){ // Convert from mm to encoder ticks
-                slidePosition = maxSlideLengthForGivenAngle() * SLIDE_TICKS_PER_MM;  // Convert from mm to encoder ticks
-            }
-            slideMotor.setTargetPosition((int) (slidePosition));
+            // If desired slideTargetPosition is outside the 42" horizontal extension, limit it.
+            // Convert from mm to encoder ticks
+            slideMotor.setTargetPosition((int) (Math.min(slideTargetPosition, maxSlideLengthForGivenAngle() * SLIDE_TICKS_PER_MM)));
 
             ((DcMotorEx) slideMotor).setVelocity(2100);
             slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -412,7 +410,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
             telemetry.addData("arm Encoder: ", armMotor.getCurrentPosition());
             telemetry.addData("arm angle: ", armMotor.getCurrentPosition()/ARM_TICKS_PER_DEGREE);
             telemetry.addData("Current arm state: " , currentArmState);
-            telemetry.addData("slide variable", slidePosition);
+            telemetry.addData("slide variable", slideTargetPosition);
             telemetry.addData("slide Target Position",slideMotor.getTargetPosition());
             telemetry.addData("slide current position", slideMotor.getCurrentPosition());
             telemetry.addData("slide current mm", slideMotor.getCurrentPosition()/SLIDE_TICKS_PER_MM);
@@ -457,20 +455,20 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 // We have a delay where the arm rotates first, then slides out to prevent the robot from tipping
                 armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
                 if (sequenceTimer.seconds() > 0.7) { // Adjust this time as needed to prevent robot tipping
-                    slidePosition = SLIDE_SCORING_IN_HIGH_BASKET;
+                    slideTargetPosition = SLIDE_SCORING_IN_HIGH_BASKET;
                     currentArmState = ArmState.IDLE;
                 }
                 break;
             case COLLECT:
                 // We have a delay where the arm slides in first, then rotates to prevent collision with the high basket
-                slidePosition = SLIDE_COLLAPSED;
+                slideTargetPosition = SLIDE_COLLAPSED;
                 if (sequenceTimer.seconds() > 0.5){ // Adjust this time as needed to prevent collision
                     armPosition = ARM_COLLECT;
                     currentArmState = ArmState.IDLE;
                 }
                 break;
             case FOLDED:
-                slidePosition = SLIDE_COLLAPSED;
+                slideTargetPosition = SLIDE_COLLAPSED;
                 intake.setPower(INTAKE_OFF);
                 wrist.setPosition(WRIST_FOLDED_IN);
                 currentArmState = ArmState.IDLE;
