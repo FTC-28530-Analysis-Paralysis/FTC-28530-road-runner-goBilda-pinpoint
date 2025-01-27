@@ -57,9 +57,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html#field-centric
  */
 
+/**
+ * TODO: Write code for the following ideas, then test:
+ *       1) Test Pre-hang routine (gamepad1.y) - adjust the ARM_ATTACH_HANGING_HOOK angle as needed
+ *       2) Test Hang routine (gamepad1.x) - can disable if it doesn't seem good
+ *       3) Fix horizontal limit code so that slide extends more as it goes up - Mr. Morris needs to see this and maybe add some telemetry to troubleshoot
+ *       4) Try variants of code for arm and slide that take cycleTime into account for smoother operation
+ *
+ * DONE: 1) Create 42" horizontal limit to keep robot arm and slide operating in the legal envelope
+ *       2) Implement finite state machine model to track arm preset movements, with delays for arm rotation and slide extension to manage whiplash
+ *       3) Intake successful routine (gamepad1.b) - rotate arm up, retract slide
+ *       4) Pre-hang routine (gamepad1.y) - fold wrist, retract slide, rotate to hang hook position
+ *       5) Hang routine? (gamepad1.x) - rotate arm and drive forward a little bit
+ */
+
 @TeleOp(name="Competition-Teleop-Modified", group="In_Development")
 //@Disabled
 public class CompetitionTeleopModified extends LinearOpMode {
+
 
 
     /* Declare OpMode members. */
@@ -97,7 +112,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     In these variables you'll see a number in degrees, multiplied by the ticks per degree of the arm.
     This results in the number of encoder ticks the arm needs to move in order to achieve the ideal
     set position of the arm. For example, the ARM_SCORE_SAMPLE_IN_HIGH is set to
-    160 * ARM_TICKS_PER_DEGREE. This asks the arm to move 160Â° from the starting position.
+    160 * ARM_TICKS_PER_DEGREE. This asks the arm to move 160° from the starting position.
     If you'd like it to move further, increase that number. If you'd like it to not move
     as far from the starting position, decrease it. */
 
@@ -106,15 +121,15 @@ public class CompetitionTeleopModified extends LinearOpMode {
     final double ARM_CLEAR_BARRIER         = 15  * ARM_TICKS_PER_DEGREE;
     final double ARM_SCORE_SPECIMEN        = 90  * ARM_TICKS_PER_DEGREE;
     final double ARM_SCORE_SAMPLE_IN_HIGH  = 99  * ARM_TICKS_PER_DEGREE;
-    final double ARM_ATTACH_HANGING_HOOK   = 110 * ARM_TICKS_PER_DEGREE;
-    final double ARM_WINCH_ROBOT           = 10  * ARM_TICKS_PER_DEGREE;
+    final double ARM_ATTACH_HANGING_HOOK   = 106 * ARM_TICKS_PER_DEGREE;
+    final double ARM_HANG                  = 10  * ARM_TICKS_PER_DEGREE;
 
-    static double ARM_RETRACTED_LENGTH_MM = 495;
-    static double MAX_FORWARD_EXTENSION_MM = (42 - 5.5) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
+    final static double ARM_RETRACTED_LENGTH_MM = 495;
+    final static double MAX_FORWARD_EXTENSION_MM = (42 - 5.5) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
                                                                 // 5.5 inches is how far back we need to reach for the ascent
 
-    /// Mr. Morris: These are the arm states that the gamepad1 dpad buttons will toggle through
-    private enum ArmState{HIGH_BASKET, COLLECT, FOLDED, CLEAR_BARRIER, IDLE}
+    // These are the arm states that the gamepad1 dpad buttons will toggle through
+    private enum ArmState{HIGH_BASKET, COLLECT, FOLDED, CLEAR_BARRIER, INTAKE_COMPLETE, PRE_HANG, HANG, IDLE}
     private ArmState currentArmState = ArmState.FOLDED;
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
@@ -281,6 +296,9 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 intake.setPower(INTAKE_OFF);
             }
 
+
+
+            // TODO: Make armPosition movement dependent on cycleTime like the slide example below - should smooth arm movement
             armPosition = armPosition - gamepad2.left_stick_y * 30; //Arm speed
 
             /* Here we implement a set of if else statements to set our arm to different scoring positions.
@@ -312,6 +330,22 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 updateArmState(ArmState.FOLDED);
             }
 
+            else if (gamepad1.b){
+                /* this rotates the arm up, retracts the slide, and turns off the intake servo */
+                updateArmState(ArmState.INTAKE_COMPLETE);
+            }
+
+            else if (gamepad1.y){
+                /* this rotates the arm up, retracts the slide, and turns off the intake servo */
+                updateArmState(ArmState.PRE_HANG);
+            }
+
+            else if (gamepad1.x){
+                /* this rotates the arm down and drives forward a bit to engage the hook and then draw the robot up */
+                updateArmState(ArmState.HANG);
+            }
+
+
            /* This is probably my favorite piece of code on this robot. It's a clever little software
            solution to a problem the robot has.
            This robot has an extending lift on the end of an arm shoulder. That arm shoulder should
@@ -322,7 +356,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
            results in the number of degrees we need to fudge our arm up by to keep the end of the arm
            the same distance from the field.
            Now we don't need this to happen when the arm is up and in scoring position. So if the arm
-           is above 45Â°, then we just set armSlideComp to 0. It's only if it's below 45Â° that we set it
+           is above 45°, then we just set armSlideComp to 0. It's only if it's below 45° that we set it
            to a value. */
             if (armPosition < 45 * ARM_TICKS_PER_DEGREE){
                 armSlideComp = (0.25568 * slideTargetPosition);
@@ -349,7 +383,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
             as long as we hold the bumpers, and when we let go of the bumper, stop where it is at.
             This allows the driver to manually set the position, and not have to have a bunch of different
             options for how far out it goes. But it also lets us enforce the end stops for the slide
-            in software. So that the motor can't run past it's endstops and stall.
+            in software. So that the motor can't run past its endstops and stall.
             We have our SlidePosition variable, which we increment or decrement for every cycle (every
             time our main robot code runs) that we're holding the button. Now since every cycle can take
             a different amount of time to complete, and we want the lift to move at a constant speed,
@@ -477,7 +511,33 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 armPosition = ARM_CLEAR_BARRIER;
                 currentArmState = ArmState.IDLE;
                 break;
-            // TODO: Consider a Hang routine where a button press automates the motor movements and timing for the hang routine.
+            case INTAKE_COMPLETE:
+                intake.setPower(INTAKE_OFF);
+                armPosition = ARM_CLEAR_BARRIER;
+                slideTargetPosition = SLIDE_COLLAPSED;
+                currentArmState = ArmState.IDLE;
+                break;
+            case PRE_HANG:
+                intake.setPower(INTAKE_OFF);
+                wrist.setPosition(WRIST_FOLDED_IN);
+                armPosition = ARM_ATTACH_HANGING_HOOK;
+                slideTargetPosition = SLIDE_COLLAPSED;
+                currentArmState = ArmState.IDLE;
+                break;
+            case HANG:
+                armPosition = ARM_HANG;
+                leftFrontDrive.setPower(.5);
+                leftBackDrive.setPower(.5);
+                rightFrontDrive.setPower(.5);
+                rightBackDrive.setPower(.5);
+                if (sequenceTimer.seconds() > 2) {
+                    leftFrontDrive.setPower(0);
+                    leftBackDrive.setPower(0);
+                    rightFrontDrive.setPower(0);
+                    rightBackDrive.setPower(0);
+                    currentArmState = ArmState.IDLE;
+                }
+                break;
             case IDLE:
                 break;
             default:
