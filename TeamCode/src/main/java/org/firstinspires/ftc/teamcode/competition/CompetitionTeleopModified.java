@@ -448,6 +448,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
             telemetry.addData("slide Target Position",slideMotor.getTargetPosition());
             telemetry.addData("slide current position", slideMotor.getCurrentPosition());
             telemetry.addData("slide current mm", slideMotor.getCurrentPosition()/SLIDE_TICKS_PER_MM);
+            telemetry.addData("Calculated horizontal extension", Math.cos(Math.toRadians(armMotor.getCurrentPosition()/ARM_TICKS_PER_DEGREE -33.3))*(ARM_RETRACTED_LENGTH_MM+(slideMotor.getCurrentPosition()/SLIDE_TICKS_PER_MM)));
             telemetry.addData("slideMotor Current:",((DcMotorEx) slideMotor).getCurrent(CurrentUnit.AMPS));
             telemetry.update();
         }
@@ -550,7 +551,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     // TODO: TEST!
     private double maxSlideLengthForGivenAngle(){
         double normalizedArmAngle = armMotor.getCurrentPosition()/ARM_TICKS_PER_DEGREE - 33.3; // Arm starts at 33.3 degrees below straight forward.
-        double hypotenuse = MAX_FORWARD_EXTENSION_MM / Math.cos(Math.toRadians(normalizedArmAngle)); // Using trigonometry to calculate total length
+        double hypotenuse = MAX_FORWARD_EXTENSION_MM / Math.cos(Math.toRadians(normalizedArmAngle)); // Using trigonometry to calculate total length: cos(θ) = adjacent / hypotenuse
         return hypotenuse - ARM_RETRACTED_LENGTH_MM; // Total arm length minus retracted length leaves the slide extension amount
     }
 }
