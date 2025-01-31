@@ -4,79 +4,109 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.RoadRunnerFiles.MecanumDrive;
+import org.firstinspires.ftc.teamcode.RoadRunner.MecanumDrive;
 
-
-// This program follows the tutorial video from FTC 6282 Simi Valley Robotics: https://youtu.be/uBwVSRxvpB8?si=0o4t_w6YdL_58o8R
-// It is an example of how to add actions for other mechanisms (a servo here) to complete during a roadrunner autonomous routine.
 @Autonomous(name="RR Auto Action Testing")
+//@Disabled
 public class RRAutoActionTesting extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
-        Servo intakeLeft = hardwareMap.servo.get("servo");
+        CRServo intake = hardwareMap.crservo.get("intake");
+        DcMotor slide = hardwareMap.dcMotor.get("slide");
 
         waitForStart();
 
-        // runBlocking runs actions in blocking sequence so each action waits until the previous one is done
         Actions.runBlocking(
-                drive.actionBuilder(new Pose2d(0,0,0))
-                .lineToX(64)
-                .stopAndAdd(new PatientServoAction(intakeLeft, 1)) //
-                .lineToX(0)
-                .stopAndAdd(new ServoAction(intakeLeft,0))
+            drive.actionBuilder(new Pose2d(0,0,0))
+                .lineToX(20)
+                .stopAndAdd(new PatientServoAction(intake, 1))
+                .lineToX(15)
+                .stopAndAdd(new MotorRunToPositionAction(slide, 100, 1000))
+                .lineToX(10)
+                .stopAndAdd(new WaitUntilMotorDoneAction(slide))
+                .lineToX(20)
+                .stopAndAdd(new MotorRunToPositionAction(slide, 10, 1000))
+                .stopAndAdd(new WaitUntilMotorDoneAction(slide))
                 .build());
     }
 
-    // a basic action like this returns false immediately so the runBlocking moves on to the next action while this completes
     public class ServoAction implements Action {
-        Servo servo;
-        double position;
+        CRServo crServo;
+        double power;
 
-        public ServoAction(Servo s, double p) {
-            this.servo = s;
-            this.position = p;
+        public ServoAction(CRServo s, double pos) {
+            this.crServo = s;
+            this.power = pos;
         }
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            servo.setPosition(position);
-            return false; // returning true causes the action to run again, returning false causes it to cease
+            crServo.setPower(power);
+            return false;
         }
     }
 
-    // This doesn't immediately return false - it keeps running until the return statement is false
-    // (i.e. it's been running for 3 seconds or motor has gotten to position).
-    // Thus the runBlocking action doesn't move on until this one is done
     public class PatientServoAction implements Action {
-        Servo servo;
-        double position;
+        CRServo crServo;
+        double power;
         ElapsedTime timer;
 
-        boolean hasInitialized;
-
-        public PatientServoAction(Servo s, double p) {
-            this.servo = s;
-            this.position = p;
+        public PatientServoAction(CRServo s, double pos) {
+            this.crServo = s;
+            this.power = pos;
         }
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            if (!hasInitialized){
+            if (timer == null){
                 timer = new ElapsedTime();
-                servo.setPosition(position);
+                crServo.setPower(power);
             }
 
             // do we need to keep running?
             return timer.seconds() < 3;
-            // or return motor.getPosition == targetPosition;
         }
     }
+
+    public class MotorRunToPositionAction implements Action {
+        DcMotor motor;
+        int position;
+        int motorVelocity;
+
+        public MotorRunToPositionAction(DcMotor m, int position, int motorVelocity) {
+            this.motor = m;
+            this.position = position;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            motor.setTargetPosition(position);
+            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motor.setPower(.5);
+            return false;
+        }
+    }
+
+    public class WaitUntilMotorDoneAction implements Action {
+        DcMotor motor;
+
+        public WaitUntilMotorDoneAction(DcMotor m) {
+            this.motor = m;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            return !motor.isBusy();
+        }
+    }
+
 }

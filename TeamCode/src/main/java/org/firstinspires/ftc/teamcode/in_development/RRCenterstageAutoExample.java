@@ -18,7 +18,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.RoadRunnerFiles.MecanumDrive;
+import org.firstinspires.ftc.teamcode.RoadRunner.MecanumDrive;
 
 /**
  *   This is an example of an autonomous mode that uses the Road Runner library.
@@ -132,7 +132,7 @@ public class RRCenterstageAutoExample extends LinearOpMode {
         Gripper gripper = new Gripper(hardwareMap);
         Lift lift = new Lift(hardwareMap);
 
-        // vision here that outputs position
+        // vision here that outputs power
         int visionOutputPosition = 1;
 
         TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose)

@@ -1,10 +1,10 @@
-package org.firstinspires.ftc.teamcode.RoadRunnerFiles.tuning;
+package org.firstinspires.ftc.teamcode.RoadRunner.tuning;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.RoadRunnerFiles.PinpointDrive;
+import org.firstinspires.ftc.teamcode.RoadRunner.PinpointDrive;
 
 public final class ManualFeedbackTuner extends LinearOpMode {
     public static double DISTANCE = 64;

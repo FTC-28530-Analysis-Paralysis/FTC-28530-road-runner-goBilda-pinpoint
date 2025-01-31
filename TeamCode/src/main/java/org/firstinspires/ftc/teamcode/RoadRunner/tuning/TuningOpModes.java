@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.RoadRunnerFiles.tuning;
+package org.firstinspires.ftc.teamcode.RoadRunner.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.reflection.ReflectionConfig;
@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
-import org.firstinspires.ftc.teamcode.RoadRunnerFiles.MecanumDrive;
-import org.firstinspires.ftc.teamcode.RoadRunnerFiles.PinpointDrive;
+import org.firstinspires.ftc.teamcode.RoadRunner.MecanumDrive;
+import org.firstinspires.ftc.teamcode.RoadRunner.PinpointDrive;
 
 import java.util.ArrayList;
 import java.util.Arrays;
