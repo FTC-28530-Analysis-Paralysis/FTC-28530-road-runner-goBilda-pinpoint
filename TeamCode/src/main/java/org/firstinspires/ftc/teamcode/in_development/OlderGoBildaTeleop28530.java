@@ -21,7 +21,7 @@
  */
 
 
-package org.firstinspires.ftc.teamcode.competition;
+package org.firstinspires.ftc.teamcode.in_development;
 
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -66,7 +66,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 @TeleOp(name="Competition-Teleop", group="In_Development")
 //@Disabled
-public class CompetitionTeleop28530 extends LinearOpMode {
+public class OlderGoBildaTeleop28530 extends LinearOpMode {
 
 
     /* Declare OpMode members. */

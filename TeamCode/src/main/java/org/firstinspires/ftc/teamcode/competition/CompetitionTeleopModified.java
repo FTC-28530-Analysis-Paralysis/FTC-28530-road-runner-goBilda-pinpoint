@@ -71,7 +71,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  *       5) Hang routine? (gamepad1.x) - rotate arm and drive forward a little bit
  */
 
-@TeleOp(name="Competition-Teleop-Modified", group="In_Development")
+@TeleOp(name="Competition-Teleop-Modified", group="0Competition")
 //@Disabled
 public class CompetitionTeleopModified extends LinearOpMode {
 
@@ -151,6 +151,9 @@ public class CompetitionTeleopModified extends LinearOpMode {
     final double SLIDE_SCORING_IN_HIGH_BASKET = 420 * SLIDE_TICKS_PER_MM;
 
     double slideTargetPosition = SLIDE_COLLAPSED;
+
+    final double BRAKE_GAIN = .5; // Limit braking effect to 50% of max speed
+    double brake = 0;
 
     double cycleTime = 0;
     double loopTime = 0;
@@ -239,9 +242,12 @@ public class CompetitionTeleopModified extends LinearOpMode {
             // the arm, slide, and wrist together in coordinated movements.
             updateArmState(currentArmState);
 
-            double y = -squareInputWithSign(gamepad1.left_stick_y); // left stick is negative when up so flip that with negative sign
-            double x = squareInputWithSign(gamepad1.left_stick_x);
-            double rx = squareInputWithSign(gamepad1.right_stick_x);
+            // Hold left trigger to apply a variable slowing effect to all wheel and arm movements - all the way pressed results in 50% speed reduction
+            brake = gamepad1.left_trigger * BRAKE_GAIN; //TODO: Currently this even affects moving to presets - test and remove that if it's not needed
+
+            double y = -squareInputWithSign(gamepad1.left_stick_y) * brake; // left stick is negative when up so flip that with negative sign
+            double x = squareInputWithSign(gamepad1.left_stick_x) * brake;
+            double rx = squareInputWithSign(gamepad1.right_stick_x) * brake;
 
             // This button choice was made so that it is hard to hit on accident,
             // it can be freely changed based on preference.
@@ -299,7 +305,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
 
 
             // TODO: Make armPosition movement dependent on cycleTime like the slide example below - should smooth arm movement
-            armPosition = armPosition - gamepad2.left_stick_y * 30; //Arm speed
+            armPosition = armPosition - gamepad2.left_stick_y * 30 * brake; //Arm speed
 
             /* Here we implement a set of if else statements to set our arm to different scoring positions.
             We check to see if a specific button is pressed, and then move the arm (and sometimes
@@ -371,7 +377,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
             We also set the target velocity (speed) the motor runs at, and use setMode to run it.*/
             armMotor.setTargetPosition((int) (armPosition + armSlideComp));
 
-            ((DcMotorEx) armMotor).setVelocity(2100);
+            ((DcMotorEx) armMotor).setVelocity(2100 * brake);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             /* Here we set the lift position based on the driver input.
@@ -399,7 +405,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
              *  slideTargetPosition += gamepad2.right_stick_x * 2800 * cycleTime;
              */
 
-            slideTargetPosition += gamepad2.right_stick_x * 25; //Slide speed
+            slideTargetPosition += gamepad2.right_stick_x * 25 * brake; //Slide speed
 
             /* here we check to see if the lift is trying to go higher than the maximum extension.
             if it is, we set the variable to the max. */
@@ -415,7 +421,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
             // Convert from mm to encoder ticks
             slideMotor.setTargetPosition((int) (Math.min(slideTargetPosition, maxSlideLengthForGivenAngle() * SLIDE_TICKS_PER_MM)));
 
-            ((DcMotorEx) slideMotor).setVelocity(2100);
+            ((DcMotorEx) slideMotor).setVelocity(2100 * brake);
             slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             /* Check to see if our arm is over the current limit, and report via telemetry. */
@@ -443,6 +449,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
             telemetry.addData("arm Target Position: ", armMotor.getTargetPosition());
             telemetry.addData("arm Encoder: ", armMotor.getCurrentPosition());
             telemetry.addData("arm angle: ", armMotor.getCurrentPosition()/ARM_TICKS_PER_DEGREE);
+            telemetry.addData("normalized arm angle: ", getNormalizedArmAngle());
             telemetry.addData("Current arm state: " , currentArmState);
             telemetry.addData("slide variable", slideTargetPosition);
             telemetry.addData("slide Target Position",slideMotor.getTargetPosition());
@@ -550,8 +557,12 @@ public class CompetitionTeleopModified extends LinearOpMode {
 
     // TODO: TEST!
     private double maxSlideLengthForGivenAngle(){
-        double normalizedArmAngle = armMotor.getCurrentPosition()/ARM_TICKS_PER_DEGREE - 33.3; // Arm starts at 33.3 degrees below straight forward.
-        double hypotenuse = MAX_FORWARD_EXTENSION_MM / Math.cos(Math.toRadians(normalizedArmAngle)); // Using trigonometry to calculate total length: cos(θ) = adjacent / hypotenuse
+
+        double hypotenuse = MAX_FORWARD_EXTENSION_MM / Math.cos(Math.toRadians(getNormalizedArmAngle())); // Using trigonometry to calculate total length: cos(θ) = adjacent / hypotenuse
         return hypotenuse - ARM_RETRACTED_LENGTH_MM; // Total arm length minus retracted length leaves the slide extension amount
+    }
+
+    private double getNormalizedArmAngle(){
+        return armMotor.getCurrentPosition()/ARM_TICKS_PER_DEGREE - 33.3;
     }
 }

@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.RoadRunner.MecanumDrive;
 
-@Autonomous(name="RR Auto Action Testing")
+@Autonomous(name="RR Auto Action Testing", group = "In_Development", preselectTeleOp = "CompetitionTeleopModified")
 //@Disabled
 public class RRAutoActionTesting extends LinearOpMode {
     @Override
