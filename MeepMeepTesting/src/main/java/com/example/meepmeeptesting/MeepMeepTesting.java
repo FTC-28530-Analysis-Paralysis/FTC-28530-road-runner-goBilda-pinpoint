@@ -30,15 +30,95 @@ public class MeepMeepTesting {
                 .waitSeconds(.5)
 
                 // Move to sample 1
-                .lineToY(40)
+                //.stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, ARM_VELOCITY))
+                .setTangent(Math.toRadians(90))
                 .splineToLinearHeading(new Pose2d(40,35,Math.toRadians(-45)), Math.toRadians(-45))
+                //.stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
                 // Intake sample 1
-                //...
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_COLLECT))
+                .setTangent(Math.toRadians(-45))
+                .lineToX(42)
                 .waitSeconds(.5)
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
 
                 // Move to Basket
+                //.stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SAMPLE_IN_HIGH, ARM_VELOCITY))
+                //.stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_SCORING_IN_HIGH_BASKET, SLIDE_VELOCITY))
+                .setTangent(Math.toRadians(45))
+                .splineToLinearHeading(new Pose2d(53,50,Math.toRadians(45)), Math.toRadians(45))
+                // Deposit sample 1
+                //.stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                .setTangent(Math.toRadians(45))
+                .lineToX(55)
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
+                .waitSeconds(.5)
 
+                // Move to sample 2
+                //.stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_COLLAPSED, SLIDE_VELOCITY))
+                .waitSeconds(.5)
+                //.stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, ARM_VELOCITY))
+                .setTangent(Math.toRadians(-135))
+                .splineToLinearHeading(new Pose2d(48,35,Math.toRadians(-45)), Math.toRadians(-45))
+                // Intake sample 2
+                //.stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_COLLECT))
+                .setTangent(Math.toRadians(-45))
+                .lineToX(50)
+                .waitSeconds(.5)
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
 
+                // Move to Basket
+                //.stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SAMPLE_IN_HIGH, ARM_VELOCITY))
+                //.stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_SCORING_IN_HIGH_BASKET, SLIDE_VELOCITY))
+                .setTangent(Math.toRadians(45))
+                .splineToLinearHeading(new Pose2d(53,50,Math.toRadians(45)), Math.toRadians(45))
+                // Deposit sample 2
+                //.stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                .setTangent(Math.toRadians(45))
+                .lineToX(55)
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
+                .waitSeconds(.5)
+
+                // Move to sample 3
+                //.stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_COLLAPSED, SLIDE_VELOCITY))
+                .waitSeconds(.5)
+                //.stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, ARM_VELOCITY))
+                .setTangent(Math.toRadians(-135))
+                .splineToLinearHeading(new Pose2d(58,25,Math.toRadians(0)), Math.toRadians(0))
+                // Intake sample 3
+                //.stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_COLLECT))
+                .lineToX(60)
+                .waitSeconds(.5)
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
+
+                // Move to Basket
+                //.stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SAMPLE_IN_HIGH, ARM_VELOCITY))
+                //.stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_SCORING_IN_HIGH_BASKET, SLIDE_VELOCITY))
+                .setTangent(Math.toRadians(45))
+                .splineToLinearHeading(new Pose2d(53,50,Math.toRadians(45)), Math.toRadians(45))
+                // Deposit sample 3
+                //.stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                .setTangent(Math.toRadians(45))
+                .lineToX(55)
+                //.stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
+                .waitSeconds(.5)
+
+                // Move to ascent
+                //.stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_TOUCH_BAR, ARM_VELOCITY))
+                //.stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_TOUCH_BAR, SLIDE_VELOCITY))
+                .setTangent(-90)
+                .splineToLinearHeading(new Pose2d(45, 30, Math.toRadians(-90)), Math.toRadians(-110))
+                .splineToLinearHeading(new Pose2d(30,12, Math.toRadians(180)), Math.toRadians(180))
+                // Touch Arm to bar
+                //.stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                .lineToX(22)
                 .build());
 
         RoadRunnerBotEntity bot2 = new DefaultBotBuilder(meepMeep)

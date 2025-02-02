@@ -44,6 +44,7 @@ public class RRAutoActionTesting extends LinearOpMode {
     final int ARM_SCORE_SAMPLE_IN_HIGH  = (int) (99  * ARM_TICKS_PER_DEGREE);
     final int ARM_ATTACH_HANGING_HOOK   = (int) (106 * ARM_TICKS_PER_DEGREE);
     final int ARM_HANG                  = (int) (10  * ARM_TICKS_PER_DEGREE);
+    final int ARM_TOUCH_BAR             = (int) (90  * ARM_TICKS_PER_DEGREE);
 
     final int ARM_VELOCITY = 2100;
     final int SLIDE_VELOCITY = 2100;
@@ -51,6 +52,7 @@ public class RRAutoActionTesting extends LinearOpMode {
     final int SLIDE_COLLAPSED = 0;
     final int SLIDE_SCORE_SPECIMEN = (int) (10 * SLIDE_TICKS_PER_MM);
     final int SLIDE_SCORING_IN_LOW_BASKET = 0;
+    final int SLIDE_TOUCH_BAR = (int) (50 * SLIDE_TICKS_PER_MM);
     final int SLIDE_SCORING_IN_HIGH_BASKET = (int) (420 * SLIDE_TICKS_PER_MM);
 
     @Override
@@ -91,6 +93,96 @@ public class RRAutoActionTesting extends LinearOpMode {
                     .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
                     .waitSeconds(.5)
 
+                    // Move to sample 1
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, ARM_VELOCITY))
+                    .setTangent(Math.toRadians(90))
+                    .splineToLinearHeading(new Pose2d(40,35,Math.toRadians(-45)), Math.toRadians(-45))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    // Intake sample 1
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_COLLECT))
+                    .setTangent(Math.toRadians(-45))
+                    .lineToX(42)
+                    .waitSeconds(.5)
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
+
+                    // Move to Basket
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SAMPLE_IN_HIGH, ARM_VELOCITY))
+                    .stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_SCORING_IN_HIGH_BASKET, SLIDE_VELOCITY))
+                    .setTangent(Math.toRadians(45))
+                    .splineToLinearHeading(new Pose2d(53,50,Math.toRadians(45)), Math.toRadians(45))
+                    // Deposit sample 1
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                    .setTangent(Math.toRadians(45))
+                    .lineToX(55)
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
+                    .waitSeconds(.5)
+
+                    // Move to sample 2
+                    .stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_COLLAPSED, SLIDE_VELOCITY))
+                    .waitSeconds(.5)
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, ARM_VELOCITY))
+                    .setTangent(Math.toRadians(-135))
+                    .splineToLinearHeading(new Pose2d(48,35,Math.toRadians(-45)), Math.toRadians(-45))
+                    // Intake sample 2
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_COLLECT))
+                    .setTangent(Math.toRadians(-45))
+                    .lineToX(50)
+                    .waitSeconds(.5)
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
+
+                    // Move to Basket
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SAMPLE_IN_HIGH, ARM_VELOCITY))
+                    .stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_SCORING_IN_HIGH_BASKET, SLIDE_VELOCITY))
+                    .setTangent(Math.toRadians(45))
+                    .splineToLinearHeading(new Pose2d(53,50,Math.toRadians(45)), Math.toRadians(45))
+                    // Deposit sample 2
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                    .setTangent(Math.toRadians(45))
+                    .lineToX(55)
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
+                    .waitSeconds(.5)
+
+                    // Move to sample 3
+                    .stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_COLLAPSED, SLIDE_VELOCITY))
+                    .waitSeconds(.5)
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, ARM_VELOCITY))
+                    .setTangent(Math.toRadians(-135))
+                    .splineToLinearHeading(new Pose2d(58,25,Math.toRadians(0)), Math.toRadians(0))
+                    // Intake sample 3
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_COLLECT))
+                    .lineToX(60)
+                    .waitSeconds(.5)
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
+
+                    // Move to Basket
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SAMPLE_IN_HIGH, ARM_VELOCITY))
+                    .stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_SCORING_IN_HIGH_BASKET, SLIDE_VELOCITY))
+                    .setTangent(Math.toRadians(45))
+                    .splineToLinearHeading(new Pose2d(53,50,Math.toRadians(45)), Math.toRadians(45))
+                    // Deposit sample 3
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                    .setTangent(Math.toRadians(45))
+                    .lineToX(55)
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
+                    .waitSeconds(.5)
+
+                    // Move to ascent
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_TOUCH_BAR, ARM_VELOCITY))
+                    .stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_TOUCH_BAR, SLIDE_VELOCITY))
+                    .setTangent(-90)
+                    .splineToLinearHeading(new Pose2d(45, 30, Math.toRadians(-90)), Math.toRadians(-110))
+                    .splineToLinearHeading(new Pose2d(30,12, Math.toRadians(180)), Math.toRadians(180))
+                    // Touch Arm to bar
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                    .lineToX(22)
                     .build());
     }
 
@@ -122,28 +214,6 @@ public class RRAutoActionTesting extends LinearOpMode {
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             servo.setPosition(position);
             return false;
-        }
-    }
-
-    public class PatientCRServoAction implements Action {
-        CRServo crServo;
-        double power;
-        ElapsedTime timer;
-
-        public PatientCRServoAction(CRServo s, double pos) {
-            this.crServo = s;
-            this.power = pos;
-        }
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            if (timer == null){
-                timer = new ElapsedTime();
-                crServo.setPower(power);
-            }
-
-            // do we need to keep running?
-            return timer.seconds() < 3;
         }
     }
 
