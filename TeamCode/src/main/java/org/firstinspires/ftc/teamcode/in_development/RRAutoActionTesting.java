@@ -15,10 +15,14 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.RoadRunner.MecanumDrive;
+import org.firstinspires.ftc.teamcode.RoadRunner.PinpointDrive;
 
 @Autonomous(name="RR Auto Action Testing", group = "In_Development")
 //@Disabled
 public class RRAutoActionTesting extends LinearOpMode {
+
+    private PinpointDrive drive;
+    private Pose2d initialPose;
     public DcMotor armMotor = null;
     public DcMotor slideMotor = null;
     public CRServo intake = null;
@@ -81,9 +85,10 @@ public class RRAutoActionTesting extends LinearOpMode {
 
         waitForStart();
         wrist.setPosition(WRIST_FOLDED_OUT);
-
+        initialPose = new Pose2d(37, 61.7, Math.toRadians(-90));
+        drive = new PinpointDrive(hardwareMap, initialPose);
         Actions.runBlocking(
-            drive.actionBuilder(new Pose2d(11.8, 61.7, Math.toRadians(-90)))
+            drive.actionBuilder(initialPose)
                     // start - swing arm to score specimen position and move toward high rung
                     .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_ABOVE_HIGH_RUNG, ARM_VELOCITY))
                     .lineToY(35)
