@@ -112,7 +112,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     In these variables you'll see a number in degrees, multiplied by the ticks per degree of the arm.
     This results in the number of encoder ticks the arm needs to move in order to achieve the ideal
     set position of the arm. For example, the ARM_SCORE_SAMPLE_IN_HIGH is set to
-    160 * ARM_TICKS_PER_DEGREE. This asks the arm to move 160° from the starting position.
+    99 * ARM_TICKS_PER_DEGREE. This asks the arm to move 99° from the starting position.
     If you'd like it to move further, increase that number. If you'd like it to not move
     as far from the starting position, decrease it. */
 
@@ -181,8 +181,8 @@ public class CompetitionTeleopModified extends LinearOpMode {
         leftBackDrive   = hardwareMap.dcMotor.get("left_rear_drive");
         rightFrontDrive = hardwareMap.dcMotor.get("right_front_drive");
         rightBackDrive  = hardwareMap.dcMotor.get("right_rear_drive");
-        armMotor        = hardwareMap.get(DcMotor.class, "arm"); //the arm motor
-        slideMotor = hardwareMap.dcMotor.get("slide");
+        armMotor        = hardwareMap.dcMotor.get("arm"); //the arm motor
+        slideMotor      = hardwareMap.dcMotor.get("slide");
 
         /* we need to reverse the left side of the drivetrain so it doesn't turn when we ask all the
         drive motors to go forward. */
@@ -243,7 +243,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
             updateArmState(currentArmState);
 
             // Hold left trigger to apply a variable slowing effect to all wheel and arm movements - all the way pressed results in 50% speed reduction
-            brake = gamepad1.left_trigger * BRAKE_GAIN; //TODO: Currently this even affects moving to presets - test and remove that if it's not needed
+            brake = (1 - gamepad1.left_trigger * BRAKE_GAIN); //TODO: Currently this even affects moving to presets - test and remove that if it's not needed
 
             double y = -squareInputWithSign(gamepad1.left_stick_y) * brake; // left stick is negative when up so flip that with negative sign
             double x = squareInputWithSign(gamepad1.left_stick_x) * brake;
@@ -377,7 +377,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
             We also set the target velocity (speed) the motor runs at, and use setMode to run it.*/
             armMotor.setTargetPosition((int) (armPosition + armSlideComp));
 
-            ((DcMotorEx) armMotor).setVelocity(2100 * brake);
+            ((DcMotorEx) armMotor).setVelocity(2100 * brake); //TODO: The brake is being applied to preset velocity, remove if undesired
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             /* Here we set the lift position based on the driver input.
@@ -421,17 +421,13 @@ public class CompetitionTeleopModified extends LinearOpMode {
             // Convert from mm to encoder ticks
             slideMotor.setTargetPosition((int) (Math.min(slideTargetPosition, maxSlideLengthForGivenAngle() * SLIDE_TICKS_PER_MM)));
 
-            ((DcMotorEx) slideMotor).setVelocity(2100 * brake);
+            ((DcMotorEx) slideMotor).setVelocity(2100 * brake); //TODO: The brake is being applied to preset velocity, remove if undesired
             slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             /* Check to see if our arm is over the current limit, and report via telemetry. */
             if (((DcMotorEx) armMotor).isOverCurrent()){
                 telemetry.addLine("MOTOR EXCEEDED CURRENT LIMIT!");
             }
-
-            /* at the very end of the stream, we added a linear actuator kit to try to hang the robot on.
-            it didn't end up working... But here's the code we run it with. It just sets the motor
-            power to match the inverse of the left stick y. */
 
             /* This is how we check our loop time. We create three variables:
                 loopTime is the current time when we hit this part of the code.

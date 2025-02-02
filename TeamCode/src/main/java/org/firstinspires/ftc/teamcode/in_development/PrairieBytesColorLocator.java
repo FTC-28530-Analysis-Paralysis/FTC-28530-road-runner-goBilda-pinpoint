@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.in_development;
 
 import android.util.Size;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import java.util.List;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
@@ -19,6 +20,7 @@ import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.opencv.core.RotatedRect;
 
 @TeleOp(name = "PrairieBytesColorLocator")
+@Disabled
 public class PrairieBytesColorLocator extends LinearOpMode {
 
     private DcMotor LiftArm;
@@ -36,7 +38,7 @@ public class PrairieBytesColorLocator extends LinearOpMode {
     double WRIST_FOLDED_OUT;
     ColorBlobLocatorProcessor myColorBlobLocatorProcessor;
     boolean BlobDetected;
-    int armExtention;
+    int armExtension;
     double PositionLR;
 
     /**
@@ -101,7 +103,7 @@ public class PrairieBytesColorLocator extends LinearOpMode {
         WRIST_FOLDED_IN = 0.595;
         WRIST_FOLDED_OUT = 0.925;
         armPosition = 0;
-        armExtention = 0;
+        armExtension = 0;
         BlobDetected = false;
         PositionLR = 0;
     }
@@ -120,7 +122,7 @@ public class PrairieBytesColorLocator extends LinearOpMode {
         Slider.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         Slider.setDirection(DcMotor.Direction.REVERSE);
         Slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Slider.setTargetPosition(armExtention);
+        Slider.setTargetPosition(armExtension);
         Slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         ((DcMotorEx) Slider).setVelocity(1200);
         // LeftFront
@@ -219,7 +221,7 @@ public class PrairieBytesColorLocator extends LinearOpMode {
         telemetry.setMsTransmissionInterval(50);
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
         LiftArm.setTargetPosition(armPosition);
-        Slider.setTargetPosition(armExtention);
+        Slider.setTargetPosition(armExtension);
         waitForStart();
         while (opModeIsActive() || false) {
             telemetry.addData("preview on/off", "... Camera Stream");
@@ -234,7 +236,7 @@ public class PrairieBytesColorLocator extends LinearOpMode {
                 Pickup();
             }
             LiftArm.setTargetPosition(armPosition);
-            Slider.setTargetPosition(armExtention);
+            Slider.setTargetPosition(armExtension);
             Telemetry2();
             telemetry.update();
             sleep(50);
@@ -248,7 +250,7 @@ public class PrairieBytesColorLocator extends LinearOpMode {
         telemetry.addData("Mode", Mode);
         telemetry.addData("armPosition", armPosition);
         telemetry.addData("armEncoder", LiftArm.getTargetPosition());
-        telemetry.addData("armExtention", armExtention);
+        telemetry.addData("armExtension", armExtension);
         telemetry.addData("sliderEncoder", Slider.getTargetPosition());
     }
 
@@ -277,8 +279,8 @@ public class PrairieBytesColorLocator extends LinearOpMode {
         sleep(1000);
         Wrist.setPosition(WRIST_FOLDED_OUT);
         sleep(500);
-        armExtention = 1340;
-        Slider.setTargetPosition(armExtention);
+        armExtension = 1340;
+        Slider.setTargetPosition(armExtension);
         sleep(1500);
         Mode = 1;
     }

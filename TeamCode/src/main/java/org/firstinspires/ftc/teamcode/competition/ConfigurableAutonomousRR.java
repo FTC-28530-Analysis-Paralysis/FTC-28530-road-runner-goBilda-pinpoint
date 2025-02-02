@@ -75,15 +75,15 @@ public class ConfigurableAutonomousRR extends LinearOpMode {
         configAutonomous();
         //sets that arm to be a little up above the ground when started
 
-        arm        = hardwareMap.get(DcMotor.class, "arm"); //the arm motor
+        arm = hardwareMap.get(DcMotor.class, "arm"); //the arm motor
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         arm.setDirection(DcMotorSimple.Direction.REVERSE);// allows the arm move
-        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // this makes the postition the arm is before its moved the "starting" posititon
-        arm.setTargetPosition(10); // this is the postition above the ground
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // this makes the position the arm is before its moved the "starting" position
+        arm.setTargetPosition(10); // this is the position above the ground
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION); // makes the arm be able to move
         arm.setPower(.1); // gives the arm power
 
-        wrist  = hardwareMap.get(Servo.class, "wrist");
+        wrist = hardwareMap.get(Servo.class, "wrist");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();

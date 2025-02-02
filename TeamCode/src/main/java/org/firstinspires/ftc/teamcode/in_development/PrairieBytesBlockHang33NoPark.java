@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.in_development;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 @Autonomous(name = "PrairieBytesBlockHang33NoPark", preselectTeleOp = "PB-Dev-V3.3")
+@Disabled
 public class PrairieBytesBlockHang33NoPark extends LinearOpMode {
 
     private DcMotor LiftArm;
