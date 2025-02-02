@@ -25,6 +25,8 @@ public class RRAutoActionTesting extends LinearOpMode {
     public Servo wrist = null;
 
     final double INTAKE_OFF = 0.0;
+    final double INTAKE_COLLECT = -1.0;
+    final double INTAKE_DEPOSIT = 0.5;
     final double WRIST_FOLDED_OUT = 0.2;
 
     final double SLIDE_TICKS_PER_MM = (111132.0 / 289.0) / 120.0;
@@ -37,12 +39,17 @@ public class RRAutoActionTesting extends LinearOpMode {
     final int ARM_COLLAPSED_INTO_ROBOT  = 0;
     final int ARM_COLLECT               = (int) (5   * ARM_TICKS_PER_DEGREE);
     final int ARM_CLEAR_BARRIER         = (int) (15  * ARM_TICKS_PER_DEGREE);
+    final int ARM_ABOVE_HIGH_RUNG       = (int) (93  * ARM_TICKS_PER_DEGREE);
     final int ARM_SCORE_SPECIMEN        = (int) (90  * ARM_TICKS_PER_DEGREE);
     final int ARM_SCORE_SAMPLE_IN_HIGH  = (int) (99  * ARM_TICKS_PER_DEGREE);
     final int ARM_ATTACH_HANGING_HOOK   = (int) (106 * ARM_TICKS_PER_DEGREE);
     final int ARM_HANG                  = (int) (10  * ARM_TICKS_PER_DEGREE);
 
+    final int ARM_VELOCITY = 2100;
+    final int SLIDE_VELOCITY = 2100;
+
     final int SLIDE_COLLAPSED = 0;
+    final int SLIDE_SCORE_SPECIMEN = (int) (10 * SLIDE_TICKS_PER_MM);
     final int SLIDE_SCORING_IN_LOW_BASKET = 0;
     final int SLIDE_SCORING_IN_HIGH_BASKET = (int) (420 * SLIDE_TICKS_PER_MM);
 
@@ -74,44 +81,24 @@ public class RRAutoActionTesting extends LinearOpMode {
         wrist.setPosition(WRIST_FOLDED_OUT);
 
         Actions.runBlocking(
-            drive.actionBuilder(new Pose2d(37,61.7,Math.toRadians(-90)))
-                .setTangent(Math.toRadians(0))
-                .lineToX(10)
-                .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SPECIMEN,1000))
-                .stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_SCORING_IN_HIGH_BASKET, 1000))
-                .lineToX(0)
-                .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
-                .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
-                .stopAndAdd(new PatientServoAction(intake,.5))
-                .lineToX(10)
-                .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_ATTACH_HANGING_HOOK, 1000))
-                .stopAndAdd(new MotorRunToPositionAction(slideMotor, SLIDE_COLLAPSED, 1000))
-                .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
-                .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
-                .waitSeconds(3)
-                .setTangent(Math.toRadians(0))
-                .lineToX(49)
-                .splineToLinearHeading(new Pose2d(37,35,Math.toRadians(-90)), Math.toRadians(-90))
-                .lineToY(17)
-                .splineToLinearHeading(new Pose2d(40,12,Math.toRadians(-110)), Math.toRadians(75))
-                .setTangent(Math.toRadians(75))
-                .lineToY(58)
-                .lineToY(12)
-                .splineToLinearHeading(new Pose2d(53,12,Math.toRadians(-90)), Math.toRadians(85))
-                .setTangent(Math.toRadians(85))
-                .lineToY(55)
-                .lineToY(12)
-                .splineToLinearHeading(new Pose2d(61,10,Math.toRadians(-90)), Math.toRadians(90))
-                .lineToY(46)
-                .splineToLinearHeading(new Pose2d(25, 12, Math.toRadians(180)), Math.toRadians(160))
-                .build());
+            drive.actionBuilder(new Pose2d(11.8, 61.7, Math.toRadians(-90)))
+                    // start - swing arm to score specimen position and move toward high rung
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_ABOVE_HIGH_RUNG, ARM_VELOCITY))
+                    .lineToY(35)
+                    // lower arm until specimen is hooked on high rung, reverse intake, back away
+                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SPECIMEN, ARM_VELOCITY))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
+                    .waitSeconds(.5)
+
+                    .build());
     }
 
-    public class ServoAction implements Action {
+    public class CRServoAction implements Action {
         CRServo crServo;
         double power;
 
-        public ServoAction(CRServo s, double pos) {
+        public CRServoAction(CRServo s, double pos) {
             this.crServo = s;
             this.power = pos;
         }
@@ -122,13 +109,28 @@ public class RRAutoActionTesting extends LinearOpMode {
             return false;
         }
     }
+    public class ServoAction implements Action {
+        Servo servo;
+        double position;
 
-    public class PatientServoAction implements Action {
+        public ServoAction(Servo s, double pos) {
+            this.servo = s;
+            this.position = pos;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            servo.setPosition(position);
+            return false;
+        }
+    }
+
+    public class PatientCRServoAction implements Action {
         CRServo crServo;
         double power;
         ElapsedTime timer;
 
-        public PatientServoAction(CRServo s, double pos) {
+        public PatientCRServoAction(CRServo s, double pos) {
             this.crServo = s;
             this.power = pos;
         }
