@@ -19,7 +19,10 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 13.106975383400094)
                 .build();
 
-        bot1.runAction(bot1.getDrive().actionBuilder(new Pose2d(11.8, 61.7, Math.toRadians(-90)))
+        bot1.runAction(bot1.getDrive().actionBuilder(new Pose2d(6, 61.7, Math.toRadians(-90)))
+                                .setTangent(0)
+                                .splineTo(new Vector2d(61,45),0)
+                                .setTangent(Math.toRadians(90))
                 // start - swing arm to score specimen position and move toward high rung
                 //.stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_ABOVE_HIGH_RUNG, ARM_VELOCITY))
                 .lineToY(35)
