@@ -375,6 +375,10 @@ public class CompetitionTeleopModified extends LinearOpMode {
             by the driver. We add the armPosition Variable to our armPositionFudgeFactor, before adding
             our armSlideComp, which adjusts the arm height for different lift extensions.
             We also set the target velocity (speed) the motor runs at, and use setMode to run it.*/
+            if (armPosition/ARM_TICKS_PER_DEGREE > 138)
+            {
+                armPosition = 138 * ARM_TICKS_PER_DEGREE;
+            }
             armMotor.setTargetPosition((int) (armPosition + armSlideComp));
 
             ((DcMotorEx) armMotor).setVelocity(2100 * brake); //TODO: The brake is being applied to preset velocity, remove if undesired
