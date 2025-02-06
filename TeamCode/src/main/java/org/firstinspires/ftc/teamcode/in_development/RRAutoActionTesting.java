@@ -30,8 +30,8 @@ public class RRAutoActionTesting extends LinearOpMode {
     public Servo wrist = null;
 
     final double INTAKE_OFF = 0.0;
-    final double INTAKE_COLLECT = -1.0;
-    final double INTAKE_DEPOSIT = 0.5;
+    final double INTAKE_COLLECT = 1.0;
+    final double INTAKE_DEPOSIT = -0.5;
     final double WRIST_FOLDED_OUT = 0;
     final double WRIST_FOLDED_IN = 1;
 
@@ -99,7 +99,7 @@ public class RRAutoActionTesting extends LinearOpMode {
                     // lower arm until specimen is hooked on high rung, reverse intake, back away
                     .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_SCORE_SPECIMEN, ARM_VELOCITY))
                     .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
-                    .waitSeconds(.5)
+                    .waitSeconds(.2)
                     .lineToY(40)
 
                     // Move to sample 1
@@ -123,11 +123,10 @@ public class RRAutoActionTesting extends LinearOpMode {
                     .setTangent(Math.toRadians(45))
                     .splineToLinearHeading(new Pose2d(51,50,Math.toRadians(45)), Math.toRadians(45))
                     // Deposit sample 1
-                    //.stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
-                    //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
-                    .waitSeconds(.2)
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
                     .setTangent(Math.toRadians(45))
-                    .lineToX(50)
+                    .lineToX(48)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
                     .waitSeconds(.5)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
@@ -142,8 +141,8 @@ public class RRAutoActionTesting extends LinearOpMode {
                     .lineToY(20)
                     // Intake sample 2
                     .stopAndAdd(new CRServoAction(intake, INTAKE_COLLECT))
-                    // .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
-                    // .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
+                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
                     .setTangent(Math.toRadians(0))
                     .lineToX(42.5)
                     .waitSeconds(.5)
@@ -160,7 +159,7 @@ public class RRAutoActionTesting extends LinearOpMode {
                     //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
                     .waitSeconds(.2)
                     .setTangent(Math.toRadians(45))
-                    .lineToX(50)
+                    .lineToX(48)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
                     .waitSeconds(.5)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
@@ -193,7 +192,7 @@ public class RRAutoActionTesting extends LinearOpMode {
                     //.stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
                     .waitSeconds(.2)
                     .setTangent(Math.toRadians(45))
-                    .lineToX(55)
+                    .lineToX(48)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
                     .waitSeconds(.5)
 
@@ -255,7 +254,7 @@ public class RRAutoActionTesting extends LinearOpMode {
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             motor.setTargetPosition(position);
             motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motor.setPower(.5);
+            motor.setPower(1);
             return false;
         }
     }

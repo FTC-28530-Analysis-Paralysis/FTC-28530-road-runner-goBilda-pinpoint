@@ -133,9 +133,9 @@ public class CompetitionTeleopModified extends LinearOpMode {
     private ArmState currentArmState = ArmState.FOLDED;
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
-    final double INTAKE_COLLECT    = -1.0;
+    final double INTAKE_COLLECT    =  1.0;
     final double INTAKE_OFF        =  0.0;
-    final double INTAKE_DEPOSIT    =  0.5;
+    final double INTAKE_DEPOSIT    = -0.5;
 
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
     final double WRIST_FOLDED_IN   = 0.1667;
