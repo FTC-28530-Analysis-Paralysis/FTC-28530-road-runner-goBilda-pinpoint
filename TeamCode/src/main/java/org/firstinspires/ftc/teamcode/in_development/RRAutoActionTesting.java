@@ -261,14 +261,22 @@ public class RRAutoActionTesting extends LinearOpMode {
 
     public class WaitUntilMotorDoneAction implements Action {
         DcMotor motor;
+        ElapsedTime timer;
+        int position;
 
         public WaitUntilMotorDoneAction(DcMotor m) {
             this.motor = m;
+            this.timer = new ElapsedTime();
+            this.position = motor.getCurrentPosition();
         }
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            return !motor.isBusy();
+            if (timer == null){
+                timer = new ElapsedTime();
+            }
+            if (timer.seconds() > 2) return true;
+            else return Math.abs(motor.getCurrentPosition() - position) < 10;
         }
     }
 
