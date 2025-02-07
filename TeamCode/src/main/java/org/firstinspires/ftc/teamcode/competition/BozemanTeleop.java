@@ -71,11 +71,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  *       5) Hang routine? (gamepad1.x) - rotate arm and drive forward a little bit
  */
 
-@TeleOp(name="Competition-Teleop-Modified", group="0Competition")
+@TeleOp(name="Bozeman Teleop", group="Competition")
 //@Disabled
-public class CompetitionTeleopModified extends LinearOpMode {
+public class BozemanTeleop extends LinearOpMode {
 
-
+    public static double endOfAutoArmPosition = 0.0;
+    public static double endOfAutoSlidePosition = 0.0;
 
     /* Declare OpMode members. */
     public DcMotor  leftFrontDrive   = null; //the left drivetrain motor
@@ -125,7 +126,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     final double ARM_HANG                  = 10  * ARM_TICKS_PER_DEGREE;
 
     final static double ARM_RETRACTED_LENGTH_MM = 495;
-    final static double MAX_FORWARD_EXTENSION_MM = (42 - 11) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
+    final static double MAX_FORWARD_EXTENSION_MM = (42 - 5.5) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
                                                                 // 5.5 inches is how far back we need to reach for the ascent
 
     // These are the arm states that the gamepad1 dpad buttons will toggle through
@@ -142,7 +143,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     final double WRIST_FOLDED_OUT  = 0.5;
 
     /* Variables that are used to set the arm to a specific position */
-    double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
+    double armTargetPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
 
     final double SLIDE_TICKS_PER_MM = (111132.0 / 289.0) / 120.0;
 
@@ -203,16 +204,15 @@ public class CompetitionTeleopModified extends LinearOpMode {
         ((DcMotorEx) armMotor).setCurrentAlert(5,CurrentUnit.AMPS);
 
         /* Before starting the armMotor. We'll make sure the TargetPosition is set to 0.
-        Then we'll set the RunMode to RUN_TO_POSITION. And we'll ask it to stop and reset encoder.
+        Then we'll set the RunMode to RUN_TO_POSITION. We do not stop and reset the encoder because
+        we want encoder values to carry over from autonomous.
         If you do not have the encoder plugged into this motor, it will not run in this code. */
-        armMotor.setTargetPosition(0);
+        armMotor.setTargetPosition((int) endOfAutoArmPosition);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         slideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        slideMotor.setTargetPosition(0);
+        slideMotor.setTargetPosition((int)endOfAutoSlidePosition);
         slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         /* Define and initialize servos.*/
         intake = hardwareMap.get(CRServo.class, "intake");
@@ -235,6 +235,11 @@ public class CompetitionTeleopModified extends LinearOpMode {
         imu.initialize(parameters);
         /* Wait for the game driver to press play */
         waitForStart();
+
+        if (opModeIsActive()){
+            armTargetPosition = endOfAutoArmPosition;
+            slideTargetPosition = endOfAutoSlidePosition;
+        }
 
         /* Run until the driver presses stop */
         while (opModeIsActive()) {
@@ -304,13 +309,13 @@ public class CompetitionTeleopModified extends LinearOpMode {
 
 
 
-            // TODO: Make armPosition movement dependent on cycleTime like the slide example below - should smooth arm movement
-            armPosition = armPosition - gamepad2.left_stick_y * 30 * brake; //Arm speed
+            // TODO: Make armTargetPosition movement dependent on cycleTime like the slide example below - should smooth arm movement
+            armTargetPosition = armTargetPosition - gamepad2.left_stick_y * 30 * brake; //Arm speed
 
             /* Here we implement a set of if else statements to set our arm to different scoring positions.
             We check to see if a specific button is pressed, and then move the arm (and sometimes
             intake and wrist) to match. For example, if we click the right bumper we want the robot
-            to start collecting. So it moves the armPosition to the ARM_COLLECT position,
+            to start collecting. So it moves the armTargetPosition to the ARM_COLLECT position,
             it folds out the wrist to make sure it is in the correct orientation to intake, and it
             turns the intake on to the COLLECT mode.*/
 
@@ -364,7 +369,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
            Now we don't need this to happen when the arm is up and in scoring position. So if the arm
            is above 45°, then we just set armSlideComp to 0. It's only if it's below 45° that we set it
            to a value. */
-            if (armPosition < 45 * ARM_TICKS_PER_DEGREE){
+            if (armTargetPosition < 45 * ARM_TICKS_PER_DEGREE){
                 armSlideComp = (0.25568 * slideTargetPosition);
             }
             else{
@@ -372,14 +377,14 @@ public class CompetitionTeleopModified extends LinearOpMode {
             }
 
             /* Here we set the target position of our arm to match the variable that was selected
-            by the driver. We add the armPosition Variable to our armPositionFudgeFactor, before adding
+            by the driver. We add the armTargetPosition Variable to our armPositionFudgeFactor, before adding
             our armSlideComp, which adjusts the arm height for different lift extensions.
             We also set the target velocity (speed) the motor runs at, and use setMode to run it.*/
-            if (armPosition/ARM_TICKS_PER_DEGREE > 138)
+            if (armTargetPosition /ARM_TICKS_PER_DEGREE > 138)
             {
-                armPosition = 138 * ARM_TICKS_PER_DEGREE;
+                armTargetPosition = 138 * ARM_TICKS_PER_DEGREE;
             }
-            armMotor.setTargetPosition((int) (armPosition + armSlideComp));
+            armMotor.setTargetPosition((int) (armTargetPosition + armSlideComp));
 
             ((DcMotorEx) armMotor).setVelocity(2100 * brake); //TODO: The brake is being applied to preset velocity, remove if undesired
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -495,7 +500,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
         switch (state){
             case HIGH_BASKET:
                 // We have a delay where the arm rotates first, then slides out to prevent the robot from tipping
-                armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
+                armTargetPosition = ARM_SCORE_SAMPLE_IN_HIGH;
                 if (sequenceTimer.seconds() > 0.7) { // Adjust this time as needed to prevent robot tipping
                     slideTargetPosition = SLIDE_SCORING_IN_HIGH_BASKET;
                     currentArmState = ArmState.IDLE;
@@ -505,7 +510,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 // We have a delay where the arm slides in first, then rotates to prevent collision with the high basket
                 slideTargetPosition = SLIDE_COLLAPSED;
                 if (sequenceTimer.seconds() > 0.5){ // Adjust this time as needed to prevent collision
-                    armPosition = ARM_COLLECT;
+                    armTargetPosition = ARM_COLLECT;
                     currentArmState = ArmState.IDLE;
                 }
                 break;
@@ -516,29 +521,29 @@ public class CompetitionTeleopModified extends LinearOpMode {
                 currentArmState = ArmState.IDLE;
                 break;
             case CLEAR_BARRIER:
-                armPosition = ARM_CLEAR_BARRIER;
+                armTargetPosition = ARM_CLEAR_BARRIER;
                 currentArmState = ArmState.IDLE;
                 break;
             case INTAKE_COMPLETE:
                 intake.setPower(INTAKE_OFF);
-                armPosition = ARM_CLEAR_BARRIER;
+                armTargetPosition = ARM_CLEAR_BARRIER;
                 slideTargetPosition = SLIDE_COLLAPSED;
                 currentArmState = ArmState.IDLE;
                 break;
             case PRE_HANG:
                 intake.setPower(INTAKE_OFF);
                 wrist.setPosition(WRIST_FOLDED_IN);
-                armPosition = ARM_ATTACH_HANGING_HOOK;
+                armTargetPosition = ARM_ATTACH_HANGING_HOOK;
                 slideTargetPosition = SLIDE_COLLAPSED;
                 currentArmState = ArmState.IDLE;
                 break;
             case HANG:
-                armPosition = ARM_HANG;
+                armTargetPosition = ARM_HANG;
                 leftFrontDrive.setPower(.5);
                 leftBackDrive.setPower(.5);
                 rightFrontDrive.setPower(.5);
                 rightBackDrive.setPower(.5);
-                if (sequenceTimer.seconds() > 2) {
+                if (sequenceTimer.seconds() > 3) {
                     leftFrontDrive.setPower(0);
                     leftBackDrive.setPower(0);
                     rightFrontDrive.setPower(0);
