@@ -125,7 +125,7 @@ public class CompetitionTeleopModified extends LinearOpMode {
     final double ARM_HANG                  = 10  * ARM_TICKS_PER_DEGREE;
 
     final static double ARM_RETRACTED_LENGTH_MM = 495;
-    final static double MAX_FORWARD_EXTENSION_MM = (42 - 5.5) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
+    final static double MAX_FORWARD_EXTENSION_MM = (42 - 11) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
                                                                 // 5.5 inches is how far back we need to reach for the ascent
 
     // These are the arm states that the gamepad1 dpad buttons will toggle through
