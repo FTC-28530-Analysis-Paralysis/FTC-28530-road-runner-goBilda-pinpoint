@@ -123,10 +123,10 @@ public class BozemanTeleop extends LinearOpMode {
     final double ARM_SCORE_SPECIMEN        = 90  * ARM_TICKS_PER_DEGREE;
     final double ARM_SCORE_SAMPLE_IN_HIGH  = 99  * ARM_TICKS_PER_DEGREE;
     final double ARM_ATTACH_HANGING_HOOK   = 106 * ARM_TICKS_PER_DEGREE;
-    final double ARM_HANG                  = 10  * ARM_TICKS_PER_DEGREE;
+    final double ARM_HANG                  = 5 * ARM_TICKS_PER_DEGREE;
 
     final static double ARM_RETRACTED_LENGTH_MM = 495;
-    final static double MAX_FORWARD_EXTENSION_MM = (42 - 5.5) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
+    final static double MAX_FORWARD_EXTENSION_MM = (42 - 13) * 25.4; // 42 inches is max horizontal envelope robot can extend in,
                                                                 // 5.5 inches is how far back we need to reach for the ascent
 
     // These are the arm states that the gamepad1 dpad buttons will toggle through
@@ -139,8 +139,8 @@ public class BozemanTeleop extends LinearOpMode {
     final double INTAKE_DEPOSIT    = -0.5;
 
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
-    final double WRIST_FOLDED_IN   = 0.1667;
-    final double WRIST_FOLDED_OUT  = 0.5;
+    final double WRIST_FOLDED_IN   = 1;
+    final double WRIST_FOLDED_OUT  = 0;
 
     /* Variables that are used to set the arm to a specific position */
     double armTargetPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
@@ -220,7 +220,7 @@ public class BozemanTeleop extends LinearOpMode {
 
         /* Make sure that the intake is off, and the wrist is folded in. */
         intake.setPower(INTAKE_OFF);
-        wrist.setPosition(WRIST_FOLDED_OUT);
+        //wrist.setPosition(WRIST_FOLDED_OUT);
 
         /* Send telemetry message to signify robot waiting */
         telemetry.addLine("Robot Ready.");
@@ -338,7 +338,7 @@ public class BozemanTeleop extends LinearOpMode {
 
             else if (gamepad1.dpad_right){
                 /* this moves the arm down, brings the slide in, and folds the wrist in */
-                updateArmState(ArmState.FOLDED);
+                wrist.setPosition(WRIST_FOLDED_OUT);
             }
 
             else if (gamepad1.b){

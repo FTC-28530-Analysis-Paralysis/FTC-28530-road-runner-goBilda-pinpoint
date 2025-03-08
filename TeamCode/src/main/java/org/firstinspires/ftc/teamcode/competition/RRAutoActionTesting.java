@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.in_development;
+package org.firstinspires.ftc.teamcode.competition;
 
 import androidx.annotation.NonNull;
 
@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.RoadRunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.RoadRunner.PinpointDrive;
 
-@Autonomous(name="RR Auto Action Testing", group = "In_Development")
+@Autonomous(name="OLD RR Auto Action Testing", group = "In_Development")
 //@Disabled
 public class RRAutoActionTesting extends LinearOpMode {
 
@@ -106,9 +106,9 @@ public class RRAutoActionTesting extends LinearOpMode {
                     .stopAndAdd(new ServoAction(wrist, WRIST_FOLDED_OUT))
                     .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, 1))
                     .setTangent(Math.toRadians(0))
-                    .splineToLinearHeading(new Pose2d(29.125,27.5,Math.toRadians(0)), Math.toRadians(0))
+                    .splineToLinearHeading(new Pose2d(29.125,26,Math.toRadians(0)), Math.toRadians(0))
                     .setTangent(Math.toRadians(-90))
-                    .lineToY(21.5)
+                    .lineToY(20.5)
                     // Intake sample 1
                     .stopAndAdd(new CRServoAction(intake, INTAKE_COLLECT))
                     .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, 1))
@@ -126,7 +126,7 @@ public class RRAutoActionTesting extends LinearOpMode {
 //                    .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
 //                    .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
                     .setTangent(Math.toRadians(45))
-                    .lineToX(48)
+                    .lineToX(49)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
                     .waitSeconds(.5)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
@@ -158,7 +158,7 @@ public class RRAutoActionTesting extends LinearOpMode {
                     .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
                     .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
                     .setTangent(Math.toRadians(45))
-                    .lineToX(48)
+                    .lineToX(49)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
                     .waitSeconds(.5)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_OFF))
@@ -190,9 +190,10 @@ public class RRAutoActionTesting extends LinearOpMode {
                     .stopAndAdd(new WaitUntilMotorDoneAction(armMotor))
                     .stopAndAdd(new WaitUntilMotorDoneAction(slideMotor))
                     .setTangent(Math.toRadians(45))
-                    .lineToX(48)
+                    .lineToX(49)
                     .stopAndAdd(new CRServoAction(intake, INTAKE_DEPOSIT))
-                    .waitSeconds(.5)
+                    .waitSeconds(1)
+                    .lineToX(40)
 
 //                    // Move to ascent
 //                    .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_TOUCH_BAR, ARM_VELOCITY))

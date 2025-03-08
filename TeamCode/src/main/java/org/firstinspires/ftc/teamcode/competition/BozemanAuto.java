@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.teamcode.RoadRunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.RoadRunner.PinpointDrive;
 
 @Autonomous(name="RR Auto Action Testing", group = "In_Development")
-//@Disabled
+@Disabled
 public class BozemanAuto extends LinearOpMode {
 
     private PinpointDrive drive;
@@ -61,6 +62,7 @@ public class BozemanAuto extends LinearOpMode {
     final int SLIDE_SCORING_IN_HIGH_BASKET = (int) (400 * SLIDE_TICKS_PER_MM);
 
     @Override
+
     public void runOpMode() throws InterruptedException {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
         intake = hardwareMap.crservo.get("intake");
@@ -106,7 +108,7 @@ public class BozemanAuto extends LinearOpMode {
                     .stopAndAdd(new ServoAction(wrist, WRIST_FOLDED_OUT))
                     .stopAndAdd(new MotorRunToPositionAction(armMotor, ARM_COLLECT, ARM_VELOCITY))
                     .setTangent(Math.toRadians(0))
-                    .splineToLinearHeading(new Pose2d(29.125,27.5,Math.toRadians(0)), Math.toRadians(0))
+                    .splineToLinearHeading(new Pose2d(29.125,27,Math.toRadians(0)), Math.toRadians(0))
                     .setTangent(Math.toRadians(-90))
                     .lineToY(20.5)
                     // Intake sample 1
