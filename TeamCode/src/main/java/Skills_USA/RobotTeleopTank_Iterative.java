@@ -29,7 +29,6 @@
 
 package Skills_USA;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -58,9 +57,10 @@ public class RobotTeleopTank_Iterative extends OpMode{
     public DcMotor left_rear_drive = null;
     public DcMotor right_front_drive = null;
     public DcMotor right_rear_drive = null;
-//    public DcMotor  leftArm     = null;
-//    public Servo    leftClaw    = null;
-//    public Servo    rightClaw   = null;
+    public DcMotor lift_motor = null;
+    public DcMotor slide_motor = null;
+    public Servo wrist = null;
+    public Servo   claw   = null;
 
     double clawOffset = 0;
 
@@ -79,7 +79,14 @@ public class RobotTeleopTank_Iterative extends OpMode{
         left_rear_drive = hardwareMap.get(DcMotor.class, "left_rear_drive");
         right_front_drive = hardwareMap.get(DcMotor.class, "right_front_drive");
         right_rear_drive = hardwareMap.get(DcMotor.class, "right_rear_drive");
-//        leftArm    = hardwareMap.get(DcMotor.class, "left_arm");
+//        lift_motor = hardwareMap.get(DcMotor.class, "lift");
+//        slide_motor = hardwareMap.get(DcMotor.class, "slide");
+
+//         Define and initialize servos.
+//        wrist = hardwareMap.get(Servo.class, "wrist");
+//        claw = hardwareMap.get(Servo.class, "grabber");
+//        wrist.setPosition(MID_SERVO);
+//        claw.setPosition(MID_SERVO);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -89,15 +96,16 @@ public class RobotTeleopTank_Iterative extends OpMode{
         right_front_drive.setDirection(DcMotor.Direction.FORWARD);
         right_rear_drive.setDirection(DcMotor.Direction.FORWARD);
 
+        left_front_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        left_rear_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        right_front_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        right_rear_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
         // left_front_drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // right_front_drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // Define and initialize ALL installed servos.
-//        leftClaw  = hardwareMap.get(Servo.class, "left_hand");
-//        rightClaw = hardwareMap.get(Servo.class, "right_hand");
-//        leftClaw.setPosition(MID_SERVO);
-//        rightClaw.setPosition(MID_SERVO);
+
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData(">", "Robot Ready.  Press START.");    //
