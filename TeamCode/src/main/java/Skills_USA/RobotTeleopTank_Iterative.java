@@ -35,6 +35,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.vision.VisionPortal;
+
 /*
  * This OpMode executes a Tank Drive control TeleOp a direct drive robot
  * The code is structured as an Iterative OpMode
@@ -53,6 +57,7 @@ import com.qualcomm.robotcore.util.Range;
 public class RobotTeleopTank_Iterative extends OpMode{
 
     /* Declare OpMode members. */
+
     public DcMotor left_front_drive = null;
     public DcMotor left_rear_drive = null;
     public DcMotor right_front_drive = null;
@@ -61,9 +66,10 @@ public class RobotTeleopTank_Iterative extends OpMode{
     public DcMotor slide_motor = null;
     public Servo wrist = null;
     public Servo   claw   = null;
-
+    private VisionPortal visionPortal;
     double clawOffset = 0;
 
+    private static final boolean USE_WEBCAM = true;
     public static final double MID_SERVO   =  0.5 ;
     public static final double CLAW_SPEED  = 0.02 ;        // sets rate to move servo
     public static final double ARM_UP_POWER    =  0.50 ;   // Run arm motor up at 50% power
@@ -74,6 +80,17 @@ public class RobotTeleopTank_Iterative extends OpMode{
      */
     @Override
     public void init() {
+
+        // Create the vision portal by using a builder.
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Set the camera (webcam vs. built-in RC phone camera).
+        if (USE_WEBCAM) {
+            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+        } else {
+            builder.setCamera(BuiltinCameraDirection.BACK);
+        }
+
         // Define and Initialize Motors
         left_front_drive = hardwareMap.get(DcMotor.class, "left_front_drive");
         left_rear_drive = hardwareMap.get(DcMotor.class, "left_rear_drive");
