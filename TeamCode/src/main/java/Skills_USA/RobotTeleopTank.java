@@ -32,6 +32,7 @@ package Skills_USA;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -52,9 +53,9 @@ import org.firstinspires.ftc.vision.VisionPortal;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Robot: Teleop Tank", group="Robot")
+@TeleOp(name="Teleop Tank", group="Robot")
 //@Disabled
-public class RobotTeleopTank_Iterative extends OpMode{
+public class RobotTeleopTank extends OpMode{
 
     /* Declare OpMode members. */
 
@@ -68,12 +69,19 @@ public class RobotTeleopTank_Iterative extends OpMode{
     public Servo   claw   = null;
     private VisionPortal visionPortal;
     double clawOffset = 0;
+    final double ARM_TICKS_PER_DEGREE =
+            28 // number of encoder ticks per rotation of the bare motor
+                    * 250047.0 / 4913.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
+                    * 100.0 / 20.0 // This is the external gear reduction, a 20T pinion gear that drives a 100T hub-mount gear
+                    * 1/360.0; // we want ticks per degree, not per rotation
 
     private static final boolean USE_WEBCAM = true;
     public static final double MID_SERVO   =  0.5 ;
     public static final double CLAW_SPEED  = 0.02 ;        // sets rate to move servo
     public static final double ARM_UP_POWER    =  0.50 ;   // Run arm motor up at 50% power
     public static final double ARM_DOWN_POWER  = -0.25 ;   // Run arm motor down at -25% power
+    public static double clawPosition = 0;
+    public static double wristPosition = 0;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -90,37 +98,41 @@ public class RobotTeleopTank_Iterative extends OpMode{
         } else {
             builder.setCamera(BuiltinCameraDirection.BACK);
         }
-
+        visionPortal = builder.build();
         // Define and Initialize Motors
         left_front_drive = hardwareMap.get(DcMotor.class, "left_front_drive");
         left_rear_drive = hardwareMap.get(DcMotor.class, "left_rear_drive");
         right_front_drive = hardwareMap.get(DcMotor.class, "right_front_drive");
         right_rear_drive = hardwareMap.get(DcMotor.class, "right_rear_drive");
-//        lift_motor = hardwareMap.get(DcMotor.class, "lift");
-//        slide_motor = hardwareMap.get(DcMotor.class, "slide");
+        lift_motor = hardwareMap.get(DcMotor.class, "lift");
+        slide_motor = hardwareMap.get(DcMotor.class, "slide");
 
 //         Define and initialize servos.
-//        wrist = hardwareMap.get(Servo.class, "wrist");
-//        claw = hardwareMap.get(Servo.class, "grabber");
-//        wrist.setPosition(MID_SERVO);
-//        claw.setPosition(MID_SERVO);
+        wrist = hardwareMap.get(Servo.class, "wrist");
+        claw = hardwareMap.get(Servo.class, "grabber");
+        wrist.setPosition(MID_SERVO);
+        claw.setPosition(MID_SERVO);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        left_front_drive.setDirection(DcMotor.Direction.REVERSE);
-        left_rear_drive.setDirection(DcMotor.Direction.REVERSE);
-        right_front_drive.setDirection(DcMotor.Direction.FORWARD);
-        right_rear_drive.setDirection(DcMotor.Direction.FORWARD);
+        left_front_drive.setDirection(DcMotor.Direction.FORWARD);
+        left_rear_drive.setDirection(DcMotor.Direction.FORWARD);
+        right_front_drive.setDirection(DcMotor.Direction.REVERSE);
+        right_rear_drive.setDirection(DcMotor.Direction.REVERSE);
+        lift_motor.setDirection(DcMotorSimple.Direction.FORWARD);
+        slide_motor.setDirection(DcMotorSimple.Direction.FORWARD);
 
         left_front_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         left_rear_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         right_front_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         right_rear_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        slide_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
-        // left_front_drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        // right_front_drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         lift_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         slide_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
 
@@ -161,24 +173,24 @@ public class RobotTeleopTank_Iterative extends OpMode{
         right_front_drive.setPower((drive + rot)/denominator);
         right_rear_drive.setPower((drive + rot)/denominator);
 
-        // Use gamepad drive & right Bumpers to open and close the claw
-        if (gamepad1.right_bumper)
-            clawOffset += CLAW_SPEED;
-        else if (gamepad1.left_bumper)
-            clawOffset -= CLAW_SPEED;
+        // Claw code
+        clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * .1;
+        claw.setPosition(clawPosition);
 
-        // Move both servos to new position.  Assume servos are mirror image of each other.
-        clawOffset = Range.clip(clawOffset, -0.5, 0.5);
-//        leftClaw.setPosition(MID_SERVO + clawOffset);
-//        rightClaw.setPosition(MID_SERVO - clawOffset);
+        //Wrist code
+        if (gamepad1.right_bumper) {
+            wristPosition += 0.01;
+        }
+        else if (gamepad1.right_bumper) {
+            wristPosition -= 0.01;
+        }
+        wrist.setPosition(wristPosition);
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
-//        if (gamepad1.y)
-//            leftArm.setPower(ARM_UP_POWER);
-//        else if (gamepad1.a)
-//            leftArm.setPower(ARM_DOWN_POWER);
-//        else
-//            leftArm.setPower(0.0);
+            lift_motor.setPower(gamepad1.right_stick_y);
+            slide_motor.setPower(gamepad1.right_stick_x);
+
+
 
         // Send telemetry message to signify robot running;
         telemetry.addData("claw",  "Offset = %.2f", clawOffset);
