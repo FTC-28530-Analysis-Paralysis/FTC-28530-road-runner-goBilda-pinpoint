@@ -76,7 +76,7 @@ public class RobotTeleopTank extends OpMode{
                     * 1/360.0; // we want ticks per degree, not per rotation
 
     private static final boolean USE_WEBCAM = true;
-    public static final double MID_SERVO   =  0.5 ;
+    public static final double MID_SERVO   =  0 ;
     public static final double CLAW_SPEED  = 0.02 ;        // sets rate to move servo
     public static final double ARM_UP_POWER    =  0.50 ;   // Run arm motor up at 50% power
     public static final double ARM_DOWN_POWER  = -0.25 ;   // Run arm motor down at -25% power
@@ -136,9 +136,10 @@ public class RobotTeleopTank extends OpMode{
         lift_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slide_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
-         lift_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-         slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
+//
+//         lift_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//         slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
 
