@@ -80,6 +80,12 @@ public class RobotTeleopTank extends OpMode{
     public static final double CLAW_SPEED  = 0.02 ;        // sets rate to move servo
     public static final double ARM_UP_POWER    =  0.50 ;   // Run arm motor up at 50% power
     public static final double ARM_DOWN_POWER  = -0.25 ;   // Run arm motor down at -25% power
+    public static final int ARM_INCREMENT = 100;
+    public static final int ARM_MAX = 1000;
+    public static final int ARM_MIN = 0;
+    public static final int SLIDE_INCREMENT = 100;
+    public static final int SLIDE_MAX = 1000;
+    public static final int SLIDE_MIN = 0;
     public static double clawPosition = 0;
     public static double wristPosition = 0;
 
@@ -121,7 +127,7 @@ public class RobotTeleopTank extends OpMode{
         right_front_drive.setDirection(DcMotor.Direction.REVERSE);
         right_rear_drive.setDirection(DcMotor.Direction.REVERSE);
         lift_motor.setDirection(DcMotorSimple.Direction.FORWARD);
-        slide_motor.setDirection(DcMotorSimple.Direction.FORWARD);
+        slide_motor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         left_front_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         left_rear_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -131,8 +137,8 @@ public class RobotTeleopTank extends OpMode{
         slide_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
-         lift_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-         slide_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         lift_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+         slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
 
@@ -166,7 +172,7 @@ public class RobotTeleopTank extends OpMode{
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forward, so negate it)
         drive = -gamepad1.left_stick_y;
-        rot = gamepad1.left_stick_x;
+        rot = -gamepad1.left_stick_x;
         denominator = Math.max(drive + rot,1);
         left_front_drive.setPower((drive - rot)/denominator);
         left_rear_drive.setPower((drive - rot)/denominator);
@@ -174,26 +180,54 @@ public class RobotTeleopTank extends OpMode{
         right_rear_drive.setPower((drive + rot)/denominator);
 
         // Claw code
-        clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * .1;
+        clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * .03;
         claw.setPosition(clawPosition);
+        //Claw limit
+        if (clawPosition > 1)
+            clawPosition = 1;
+        else if (clawPosition < 0) {
+            clawPosition = 0;
+        }
 
         //Wrist code
         if (gamepad1.right_bumper) {
             wristPosition += 0.01;
         }
-        else if (gamepad1.right_bumper) {
+        else if (gamepad1.left_bumper) {
             wristPosition -= 0.01;
+        }
+       //Wrist limit
+        if (wristPosition > 1)
+            wristPosition = 1;
+        else if (wristPosition < 0) {
+            wristPosition = 0;
         }
         wrist.setPosition(wristPosition);
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
-            lift_motor.setPower(gamepad1.right_stick_y);
-            slide_motor.setPower(gamepad1.right_stick_x);
 
+        lift_motor.setTargetPosition(lift_motor.getCurrentPosition() - (int) (gamepad1.right_stick_y * ARM_INCREMENT));
+        slide_motor.setTargetPosition(slide_motor.getCurrentPosition() + (int) (gamepad1.right_stick_x * SLIDE_INCREMENT));
+        lift_motor.setPower(1);
+        lift_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        slide_motor.setPower(1);
+        slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+//        if (lift_motor.getCurrentPosition() > ARM_MAX)
+//            lift_motor.setTargetPosition((int) ARM_MAX);
+//        else if (lift_motor.getCurrentPosition() < ARM_MIN)
+//            lift_motor.setTargetPosition((int) ARM_MIN);
+//
+//        if (slide_motor.getCurrentPosition() > SLIDE_MAX)
+//            slide_motor.setTargetPosition((int) SLIDE_MAX);
+//        else if (slide_motor.getCurrentPosition() < SLIDE_MIN)
+//            slide_motor.setTargetPosition((int) SLIDE_MIN);
 
         // Send telemetry message to signify robot running;
-        telemetry.addData("claw",  "Offset = %.2f", clawOffset);
+        telemetry.addData("claw position: ", clawPosition);
+        telemetry.addData("wrist position: ", wristPosition);
+        telemetry.addData("lift position: ", lift_motor.getCurrentPosition());
+        telemetry.addData("slide position: ", slide_motor.getCurrentPosition());
         telemetry.addData("drive",  "%.2f", drive);
         telemetry.addData("right", "%.2f", rot);
     }
