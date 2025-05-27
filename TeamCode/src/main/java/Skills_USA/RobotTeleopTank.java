@@ -32,9 +32,9 @@ package Skills_USA;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -63,7 +63,7 @@ public class RobotTeleopTank extends OpMode{
     public DcMotor left_rear_drive = null;
     public DcMotor right_front_drive = null;
     public DcMotor right_rear_drive = null;
-    public DcMotor lift_motor = null;
+    public DcMotor arm_motor = null;
     public DcMotor slide_motor = null;
     public Servo wrist = null;
     public Servo   claw   = null;
@@ -80,14 +80,14 @@ public class RobotTeleopTank extends OpMode{
     public static final double CLAW_SPEED  = 0.02 ;        // sets rate to move servo
     public static final double ARM_UP_POWER    =  0.50 ;   // Run arm motor up at 50% power
     public static final double ARM_DOWN_POWER  = -0.25 ;   // Run arm motor down at -25% power
-    public static final int ARM_INCREMENT = 100;
-    public static final int ARM_MAX = 1000;
+    public static final int ARM_INCREMENT = 75;
+    public static int armTargetPos;
     public static final int ARM_MIN = 0;
     public static final int SLIDE_INCREMENT = 100;
     public static final int SLIDE_MAX = 1000;
     public static final int SLIDE_MIN = 0;
-    public static double clawPosition = 0;
-    public static double wristPosition = 0;
+    public static double clawPosition;
+    public static double wristPosition;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -110,14 +110,12 @@ public class RobotTeleopTank extends OpMode{
         left_rear_drive = hardwareMap.get(DcMotor.class, "left_rear_drive");
         right_front_drive = hardwareMap.get(DcMotor.class, "right_front_drive");
         right_rear_drive = hardwareMap.get(DcMotor.class, "right_rear_drive");
-        lift_motor = hardwareMap.get(DcMotor.class, "lift");
+        arm_motor = hardwareMap.get(DcMotorEx.class, "lift");
         slide_motor = hardwareMap.get(DcMotor.class, "slide");
 
 //         Define and initialize servos.
         wrist = hardwareMap.get(Servo.class, "wrist");
         claw = hardwareMap.get(Servo.class, "grabber");
-        wrist.setPosition(MID_SERVO);
-        claw.setPosition(MID_SERVO);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left and right sticks forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -126,19 +124,24 @@ public class RobotTeleopTank extends OpMode{
         left_rear_drive.setDirection(DcMotor.Direction.FORWARD);
         right_front_drive.setDirection(DcMotor.Direction.REVERSE);
         right_rear_drive.setDirection(DcMotor.Direction.REVERSE);
-        lift_motor.setDirection(DcMotorSimple.Direction.FORWARD);
+        arm_motor.setDirection(DcMotorSimple.Direction.FORWARD);
         slide_motor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         left_front_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         left_rear_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         right_front_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         right_rear_drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        arm_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slide_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // Set target positions to whatever position they are at on robot startup so that the arm motor and servos don't move on initialization or play
+        armTargetPos = arm_motor.getCurrentPosition();
+        wristPosition = wrist.getPosition();
+        clawPosition = claw.getPosition();
 
 //        // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
 //
-//         lift_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//         arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 //         slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
@@ -206,18 +209,18 @@ public class RobotTeleopTank extends OpMode{
         wrist.setPosition(wristPosition);
 
         // Use gamepad buttons to move the arm up (Y) and down (A)
-
-        lift_motor.setTargetPosition(lift_motor.getCurrentPosition() - (int) (gamepad1.right_stick_y * ARM_INCREMENT));
+        armTargetPos = armTargetPos - (int) (gamepad1.right_stick_y * ARM_INCREMENT);
+        arm_motor.setTargetPosition(armTargetPos);
         slide_motor.setTargetPosition(slide_motor.getCurrentPosition() + (int) (gamepad1.right_stick_x * SLIDE_INCREMENT));
-        lift_motor.setPower(1);
-        lift_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm_motor.setPower(1);
+        arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slide_motor.setPower(1);
         slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-//        if (lift_motor.getCurrentPosition() > ARM_MAX)
-//            lift_motor.setTargetPosition((int) ARM_MAX);
-//        else if (lift_motor.getCurrentPosition() < ARM_MIN)
-//            lift_motor.setTargetPosition((int) ARM_MIN);
+//        if (arm_motor.getCurrentPosition() > ARM_MAX)
+//            arm_motor.setTargetPosition((int) ARM_MAX);
+//        else if (arm_motor.getCurrentPosition() < ARM_MIN)
+//            arm_motor.setTargetPosition((int) ARM_MIN);
 //
 //        if (slide_motor.getCurrentPosition() > SLIDE_MAX)
 //            slide_motor.setTargetPosition((int) SLIDE_MAX);
@@ -227,7 +230,7 @@ public class RobotTeleopTank extends OpMode{
         // Send telemetry message to signify robot running;
         telemetry.addData("claw position: ", clawPosition);
         telemetry.addData("wrist position: ", wristPosition);
-        telemetry.addData("lift position: ", lift_motor.getCurrentPosition());
+        telemetry.addData("arm position: ", arm_motor.getCurrentPosition());
         telemetry.addData("slide position: ", slide_motor.getCurrentPosition());
         telemetry.addData("drive",  "%.2f", drive);
         telemetry.addData("right", "%.2f", rot);
