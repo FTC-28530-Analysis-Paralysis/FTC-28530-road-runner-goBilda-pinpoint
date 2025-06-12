@@ -87,7 +87,13 @@ public class RobotTeleopTank extends OpMode{
     public static final int SLIDE_MAX = 1000;
     public static final int SLIDE_MIN = 0;
     public static double clawPosition;
+    public static final double CLAW_STOWED = 0.55;
     public static double wristPosition;
+    public static final double WRIST_FOLDED = 0.28;
+    public static boolean turtleMode = false;
+    public static boolean isBackButtonPressed = false;
+    public static final double TURTLE_MODE_SPEED = .5;
+    public static double driveSpeed = 1;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -136,8 +142,8 @@ public class RobotTeleopTank extends OpMode{
 
         // Set target positions to whatever position they are at on robot startup so that the arm motor and servos don't move on initialization or play
         armTargetPos = arm_motor.getCurrentPosition();
-        wristPosition = wrist.getPosition();
-        clawPosition = claw.getPosition();
+        wristPosition = WRIST_FOLDED;
+        clawPosition = CLAW_STOWED;
 
 //        // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
 //
@@ -174,14 +180,29 @@ public class RobotTeleopTank extends OpMode{
         double denominator;
 
 
+        //Turtle mode slows drive motors when toggled with back button
+        // This uses a method called button latching which only toggles when you release the button
+        // to prevent accidentally reading multiple button presses
+        if(gamepad1.back && !isBackButtonPressed) {
+            isBackButtonPressed = true;
+        } else if (!gamepad1.back && isBackButtonPressed) {
+            isBackButtonPressed = false;
+            turtleMode = !turtleMode;
+        }
+
+        if (turtleMode)
+        {
+            driveSpeed = TURTLE_MODE_SPEED;
+        } else driveSpeed = 1;
+
         // Run wheels in tank mode (note: The joystick goes negative when pushed forward, so negate it)
         drive = -gamepad1.left_stick_y;
         rot = -gamepad1.left_stick_x;
         denominator = Math.max(drive + rot,1);
-        left_front_drive.setPower((drive - rot)/denominator);
-        left_rear_drive.setPower((drive - rot)/denominator);
-        right_front_drive.setPower((drive + rot)/denominator);
-        right_rear_drive.setPower((drive + rot)/denominator);
+        left_front_drive.setPower((drive - rot)/denominator * driveSpeed);
+        left_rear_drive.setPower((drive - rot)/denominator * driveSpeed);
+        right_front_drive.setPower((drive + rot)/denominator * driveSpeed);
+        right_rear_drive.setPower((drive + rot)/denominator * driveSpeed);
 
         // Claw code
         clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * .03;
