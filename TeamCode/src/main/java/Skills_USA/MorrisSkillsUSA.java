@@ -53,7 +53,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Tank Track Control", group="Robot")
+@TeleOp(name="Morris Tank Teleop", group="Robot")
 //@Disabled
 public class MorrisSkillsUSA extends OpMode{
 
@@ -122,7 +122,7 @@ public class MorrisSkillsUSA extends OpMode{
     public static final double WRIST_FOLDED = 0.28;
     public static boolean turtleMode = false;
     public static boolean isBackButtonPressed = false;
-    public static final double TURTLE_MODE_SPEED = .5;
+    public static final double TURTLE_MODE_SPEED = .2;
     public static double driveSpeed = 1;
 
     /*
