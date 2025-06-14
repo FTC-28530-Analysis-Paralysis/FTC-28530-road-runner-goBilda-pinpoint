@@ -48,8 +48,24 @@ public class MotorPortTest extends LinearOpMode {
 
             if (!exceptionCaught) {
                 // Control the motor with gamepad input
-                power = gamepad1.left_stick_y;
+                power = -gamepad1.left_stick_y;
                 motorController.setMotorPower(motorPortNumber, power);
+
+                // --- ADD ENCODER TELEMETRY ---
+                try {
+                    int currentPosition = motorController.getMotorCurrentPosition(motorPortNumber);
+                    double velocity = motorController.getMotorVelocity(motorPortNumber); // RPM if using RUN_USING_ENCODER, Ticks/sec otherwise
+                    telemetry.addData("Encoder Pos", currentPosition);
+                    telemetry.addData("Encoder Vel", "%.2f", velocity);
+
+                    // Optional: Display the RunMode it's currently in
+                    // DcMotor.RunMode currentMode = motorController.getMotorMode(motorPortNumber);
+                    // telemetry.addData("RunMode", currentMode.toString());
+
+                } catch (Exception e) {
+                    telemetry.addData("Encoder Error", "Could not read encoder for port " + motorPortNumber);
+                }
+                // --- END ENCODER TELEMETRY ---
             }
 
             if (gamepad1.dpad_right && !dpadRightPressed) {
@@ -60,6 +76,9 @@ public class MotorPortTest extends LinearOpMode {
             }
             if (gamepad1.dpad_left && !dpadLeftPressed) {
                 selectionIndex--;
+                if (selectionIndex < 0) { // Ensure it wraps around correctly from 0 to 7
+                    selectionIndex = 7;   // Assuming 8 total items (0-7)
+                }
                 dpadLeftPressed = true;
             } else if (!gamepad1.dpad_left) {
                 dpadLeftPressed = false;
