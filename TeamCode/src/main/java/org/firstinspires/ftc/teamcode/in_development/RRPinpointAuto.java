@@ -10,8 +10,7 @@ import org.firstinspires.ftc.teamcode.RoadRunner.PinpointDrive;
 
 @Autonomous(name = "RR Pinpoint Auto", group = "RoadRunner")
 
-
-//@Disabled
+@Disabled
 public class RRPinpointAuto extends OpMode {
 
 

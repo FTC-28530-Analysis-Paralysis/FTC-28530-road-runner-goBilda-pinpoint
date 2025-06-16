@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode.in_development;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -55,7 +56,7 @@ import org.firstinspires.ftc.teamcode.RoadRunner.PinpointDrive;
  */
 
 @Autonomous(name="ConfigurableAutonomousRR", group="0Competition", preselectTeleOp = "CompetitionTeleopModified") // I added preselectTeleop so you don't have to select the next one manually in match
-//@Disabled
+@Disabled
 public class ConfigurableAutonomousRR extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();

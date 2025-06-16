@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.testing;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -8,6 +9,7 @@ import org.firstinspires.ftc.teamcode.RoadRunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.in_development.RobotHardware;
 
 
+@Disabled
 public class TeleopTest extends OpMode {
 
     // Create a org.firstinspires.ftc.teamcode.in_development.RobotHardware object to be used to access robot hardware.
