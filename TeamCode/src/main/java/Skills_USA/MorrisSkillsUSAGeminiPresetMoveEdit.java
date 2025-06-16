@@ -189,7 +189,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
 
         // Define and initialize servos.
         wrist = hardwareMap.get(Servo.class, "wrist");
-        claw = hardwareMap.get(Servo.class, "grabber");
+        claw = hardwareMap.get(Servo.class, "claw");
 
         // Set initial servo positions
         wristPosition = WRIST_FOLDED;
@@ -312,7 +312,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     @Override
     public void loop() {
         double joystickDriveInput = -gamepad1.left_stick_y; // Negative because joystick forward is negative
-        double joystickTurnInput = gamepad1.left_stick_x;  // Standard arcade: left stick X for turn
+        double joystickTurnInput = -gamepad1.left_stick_x;  // Standard arcade: left stick X for turn
 
         boolean significantJoystickInput = Math.abs(joystickDriveInput) > JOYSTICK_THRESHOLD ||
                 Math.abs(joystickTurnInput) > JOYSTICK_THRESHOLD;

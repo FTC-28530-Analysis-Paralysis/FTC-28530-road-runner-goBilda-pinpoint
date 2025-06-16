@@ -20,7 +20,7 @@ public class MotorPortTest extends LinearOpMode {
     private int motorPortNumber = 0; // Change this to the port number of your motor
     private int selectionIndex = 0;
     private DcMotorControllerEx motorController;
-    String[] hubOptions = {"Control Hub", "Expansion Hub 2"};
+    String[] hubOptions = {"Control Hub", "Expansion Hub 1"};
     String selectedHub = null;
     private boolean dpadRightPressed = false;
     private boolean dpadLeftPressed = false;
