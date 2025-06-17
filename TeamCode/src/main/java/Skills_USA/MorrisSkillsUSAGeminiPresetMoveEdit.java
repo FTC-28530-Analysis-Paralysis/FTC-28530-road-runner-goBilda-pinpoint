@@ -44,111 +44,130 @@ import org.firstinspires.ftc.vision.VisionPortal;
 //@Disabled
 public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
 
-    /* Declare OpMode members. */
 
+//--------------------------------------------------------------------------------------------------
+// OpMode Class Members
+//--------------------------------------------------------------------------------------------------
+
+  // --- Hardware Device Declarations ---
+    // Drivetrain Motors
     public DcMotorEx left_front_drive = null;
     public DcMotorEx left_rear_drive = null;
     public DcMotorEx right_front_drive = null;
     public DcMotorEx right_rear_drive = null;
+
+    // Mechanism Motors
     public DcMotorEx arm_motor = null;
     public DcMotorEx slide_motor = null;
+
+    // Servos
     public Servo wrist = null;
-    public Servo   claw   = null;
-    private VisionPortal visionPortal;
-    // Removed clawOffset as it wasn't used, clawPosition is used directly
-    // final double ARM_TICKS_PER_DEGREE = ... // This constant seems specific to an arm design, ensure it's correct for yours if used.
+    public Servo claw = null;
 
-    // --- Constants for Drivetrain ---
-    public static final double MOTOR_ENCODER_TICKS_PER_REVOLUTION = 537.7; // For goBILDA 312 RPM
+    // Vision System
+    private VisionPortal visionPortal; // Initialized in init() if USE_WEBCAM is true
+    private static final boolean USE_WEBCAM = true; // Master switch for webcam initialization
+
+//--------------------------------------------------------------------------------------------------
+// Drivetrain Constants & Variables
+//--------------------------------------------------------------------------------------------------
+
+  // --- Physical Properties & Ratios (Tune these for your specific robot build) ---
+    public static final double MOTOR_ENCODER_TICKS_PER_REVOLUTION = 537.7; // For goBILDA 5203 Series Yellow Jacket Motor (312 RPM)
     public static final double MOTOR_MAX_RPM = 312.0;
-    public static final double MOTOR_MAX_RPS = MOTOR_MAX_RPM / 60.0;
-    public static final double MAX_MOTOR_TICKS_PER_SECOND = MOTOR_MAX_RPS * MOTOR_ENCODER_TICKS_PER_REVOLUTION; // Approx 2796.04
+    // Derived motor speed values
+    public static final double MOTOR_MAX_RPS = MOTOR_MAX_RPM / 60.0; // Revolutions per second
+    public static final double MAX_MOTOR_TICKS_PER_SECOND = MOTOR_MAX_RPS * MOTOR_ENCODER_TICKS_PER_REVOLUTION; // Max ticks per second for velocity control
 
-    public static final double TRACK_PITCH_MM = 24.0;
-    public static final double TRACK_PITCH_INCHES = TRACK_PITCH_MM / 25.4; // Approx 0.94488
-    public static final double TRACK_SPROCKET_TEETH = 12.0;
-    public static final double MOTOR_TO_DRIVEN_GEAR_RATIO = 36.0 / 24.0; // 1.5
-    public static final double OVERALL_GEAR_RATIO_MOTOR_TO_SPROCKET = MOTOR_TO_DRIVEN_GEAR_RATIO;
+    public static final double TRACK_PITCH_MM = 24.0; // Pitch of the tank track links in millimeters
+    public static final double TRACK_PITCH_INCHES = TRACK_PITCH_MM / 25.4; // Track pitch in inches
+    public static final double TRACK_SPROCKET_TEETH = 12.0; // Number of teeth on the drive sprocket
+    public static final double MOTOR_TO_DRIVEN_GEAR_RATIO = 36.0 / 24.0; // Example: 36-tooth motor gear, 24-tooth sprocket gear
+    public static final double OVERALL_GEAR_RATIO_MOTOR_TO_SPROCKET = MOTOR_TO_DRIVEN_GEAR_RATIO; // Overall gear reduction from motor to sprocket
 
-    public static final double SPROCKET_CIRCUMFERENCE_INCHES = TRACK_SPROCKET_TEETH * TRACK_PITCH_INCHES; // Approx 11.33856
-    public static final double MOTOR_TICKS_PER_SPROCKET_REV = MOTOR_ENCODER_TICKS_PER_REVOLUTION * OVERALL_GEAR_RATIO_MOTOR_TO_SPROCKET; // Approx 806.55
+    // --- Calculated Drivetrain Metrics (Based on physical properties) ---
+    public static final double SPROCKET_CIRCUMFERENCE_INCHES = TRACK_SPROCKET_TEETH * TRACK_PITCH_INCHES; // Circumference of the drive sprocket
+    public static final double MOTOR_TICKS_PER_SPROCKET_REV = MOTOR_ENCODER_TICKS_PER_REVOLUTION * OVERALL_GEAR_RATIO_MOTOR_TO_SPROCKET;
+    public static final double TICKS_PER_INCH = MOTOR_TICKS_PER_SPROCKET_REV / SPROCKET_CIRCUMFERENCE_INCHES; // Encoder ticks per inch of robot travel
 
-    public static final double TICKS_PER_INCH = MOTOR_TICKS_PER_SPROCKET_REV / SPROCKET_CIRCUMFERENCE_INCHES; // Approx 71.1329
-    public static final double TRACK_WIDTH_INCHES = 12.9931; // From (17 + 7/8) - (124 / 25.4)
-    public static final double TICKS_PER_DEGREE_ONE_TRACK = calculateTicksPerDegree(); // Approx 4.0326
+    public static final double TRACK_WIDTH_INCHES = 12.9931; // Effective distance between the center of the left and right tracks
+                                                             // From total robot width estimated at 17 7/8 inches - one track width of 124 mm
+    public static final double TICKS_PER_DEGREE_ONE_TRACK = calculateTicksPerDegree(); // Calculated in the helper method, can be pre-calculated if preferred
 
-    // --- Constants for Preset Drivetrain Moves ---
-    public static final double PRESET_MOVE_SPEED = 0.6; // Speed for RUN_TO_POSITION (0.0 to 1.0)
-    public static final double PRESET_TURN_SPEED = 0.4; // Speed for RUN_TO_POSITION (0.0 to 1.0)
-    public static final double PRESET_MOVE_DISTANCE = 6; // Distance for RUN_TO_POSITION (in inches)
-    public static final double PRESET_TURN_ANGLE = 22.5; // Angle for RUN_TO_POSITION (in degrees)
+    // --- Drivetrain Control Parameters ---
+    public static final double PRESET_MOVE_SPEED = 0.6;     // Default power/speed for preset forward/backward movements (0.0 to 1.0)
+    public static final double PRESET_TURN_SPEED = 0.4;     // Default power/speed for preset turns (0.0 to 1.0)
+    public static final double PRESET_MOVE_DISTANCE = 6.0;  // Default distance for d-pad forward/backward preset (inches)
+    public static final double PRESET_TURN_ANGLE = 22.5;    // Default angle for d-pad turn preset (degrees)
 
-    private static final boolean USE_WEBCAM = true;
-    public static final double CLAW_SPEED  = 0.03 ; // Not used, direct calculation from trigger
-    public static final double WRIST_SPEED = 0.01 ;   // Adjusted for RUN_TO_POSITION
-    public static final double ARM_POWER =  0.75 ;   // Adjusted for RUN_TO_POSITION
-    public static final double SLIDE_POWER = 0.75 ;   // Adjusted for RUN_TO_POSITION
-    public static final int ARM_INCREMENT = 5; // Adjusted for smoother control with right_stick_y
-    public static int armTargetPos;
-    // public static final int ARM_MIN = 0; // Your commented out limits
-    // public static final int ARM_MAX = 2000; // Example, set your actual max
-    public static final int SLIDE_INCREMENT = 30; // Adjusted for smoother control
-    public static int slideTargetPos; // Added for slide motor
-    // public static final int SLIDE_MAX = 1000; // Your commented out limits
-    // public static final int SLIDE_MIN = 0;    // Your commented out limits
+    public static boolean turtleMode = false;               // State variable for turtle mode (reduced speed)
+    public static final double TURTLE_MODE_SPEED = 0.2;     // Speed multiplier when turtle mode is active
+    public static double driveSpeed = 1.0;                  // Current drive speed multiplier (affected by turtle mode)
 
-    public static double clawPosition;
-    public static final double CLAW_STOWED = 0.55; // Initial stowed position
-    public static double wristPosition;
-    public static final double WRIST_FOLDED = 0.28; // Initial folded position
+//--------------------------------------------------------------------------------------------------
+// Mechanism Constants & Variables (Arm, Slide, Claw, Wrist)
+//--------------------------------------------------------------------------------------------------
 
-    public static boolean turtleMode = false;
-    public static boolean gamepad1_back_pressed_last_frame = false; // For turtle mode toggle
-    public static final double TURTLE_MODE_SPEED = .2;
-    public static double driveSpeed = 1.0; // Current drive speed multiplier
+    // --- Arm Control ---
+    public static final double ARM_RTP_MAX_SPEED = 0.75;    // Max speed/power for arm during RUN_TO_POSITION
+    public static final int ARM_MANUAL_INCREMENT = 15;      // Ticks to increment/decrement arm target per joystick input cycle
+    public static int armTargetPos = 0;                     // Target position for the arm motor (in encoder ticks)
+// public static final int ARM_MIN_TICKS = 0;           // Optional: Minimum allowed arm encoder ticks
+// public static final int ARM_MAX_TICKS = 2000;        // Optional: Maximum allowed arm encoder ticks
 
-    // --- Constants for Arm/Wrist Presets ---
-    public static final int ARM_PRESET_HIGH_TICKS = 900; //
-    public static final double WRIST_PRESET_HIGH_POS = 1.0; // Tipped up // TODO: Placeholder - adjust after testing
+    // --- Slide Control ---
+    public static final double SLIDE_RTP_MAX_SPEED = 0.75;  // Max speed/power for slide during RUN_TO_POSITION
+    public static final int SLIDE_MANUAL_INCREMENT = 30;    // Ticks to increment/decrement slide target per joystick input cycle
+    public static int slideTargetPos = 0;                   // Target position for the slide motor (in encoder ticks)
+    // public static final int SLIDE_MIN_TICKS = 0;         // Optional: Minimum allowed slide encoder ticks
+    // public static final int SLIDE_MAX_TICKS = 1000;      // Optional: Maximum allowed slide encoder ticks
 
-    public static final int ARM_PRESET_MIDDLE_TICKS = 450; /// TODO: Placeholder - adjust after testing
-    public static final double WRIST_PRESET_MIDDLE_POS = 0.75; // Tipped forward // TODO: Placeholder - adjust after testing
+    // --- Wrist Control ---
+    public static final double WRIST_MANUAL_INCREMENT = 0.01; // Servo position change per bumper press cycle
+    public static double wristPosition = 0.0;               // Target position for the wrist servo (0.0 to 1.0)
+    public static final double WRIST_FOLDED_POS = 0.28;     // Initial/stowed position for the wrist
 
-    public static final int ARM_PRESET_LOW_TICKS = 100;  /// TODO: Placeholder - adjust after testing
+    // --- Claw Control ---
+    public static final double CLAW_MANUAL_INCREMENT = 0.03; // Servo position change based on trigger input
+    public static double clawPosition = 0.0;                // Target position for the claw servo (0.0 to 1.0)
+    public static final double CLAW_STOWED_POS = 0.55;      // Initial/stowed position for the claw
 
-    // Add boolean flags for button presses (edge detection)
-    private boolean gamepad1_y_pressed_last_frame = false;
-    private boolean gamepad1_x_pressed_last_frame = false;
-    private boolean gamepad1_a_pressed_last_frame = false;
+    // --- Arm & Wrist Preset Positions ---
+    // High Preset - Tag mailbox with arm and wrist tipped up so the robot can just drive forward until it makes contact
+    public static final int ARM_PRESET_HIGH_TICKS = 900;
+    public static final double WRIST_PRESET_HIGH_POS = 1.0;    // Wrist tipped up
 
-    // --- D-Pad Button States for Preset Moves ---
+    // Middle Preset - Lift ordnance off the ground and hold it high enough to be deposited in containment box
+    public static final int ARM_PRESET_MIDDLE_TICKS = 450;    // TODO: Placeholder - adjust after testing
+    public static final double WRIST_PRESET_MIDDLE_POS = 0.75; // TODO: Placeholder - adjust after testing
+
+    // Low Preset / Intake Preset - Move arm and wrist next to ground to pick up ordnance
+    public static final int ARM_PRESET_LOW_TICKS = 100;       // TODO: Placeholder - adjust after testing
+    public static final double WRIST_PRESET_LOW_POS = WRIST_PRESET_MIDDLE_POS;   // TODO: Placeholder - adjust after testing (might be same as middle for intake)
+
+
+//--------------------------------------------------------------------------------------------------
+// Gamepad Button State Variables (for edge detection)
+//--------------------------------------------------------------------------------------------------
+    // These flags help detect single button presses rather than continuous holding.
+
+    // --- Gamepad 1 ---
+    // Drivetrain Presets
     private boolean gamepad1_dpad_up_pressed_last_frame = false;
     private boolean gamepad1_dpad_down_pressed_last_frame = false;
     private boolean gamepad1_dpad_left_pressed_last_frame = false;
     private boolean gamepad1_dpad_right_pressed_last_frame = false;
 
+    // Arm/Wrist Presets
+    private boolean gamepad1_y_pressed_last_frame = false;
+    private boolean gamepad1_x_pressed_last_frame = false;
+    private boolean gamepad1_a_pressed_last_frame = false;
+
+    // Turtle Mode Toggle
+    private boolean gamepad1_back_pressed_last_frame = false;
+
     // --- Joystick Override Threshold ---
     private static final double JOYSTICK_THRESHOLD = 0.1; // Minimum joystick input to be considered active for override
-
-    // Helper to calculate Ticks Per Degree for robot turning
-    private static double calculateTicksPerDegree() {
-        if (TRACK_WIDTH_INCHES <= 0 || TICKS_PER_INCH <= 0) {
-            // Prevent division by zero or nonsensical values if constants aren't set properly
-            return 0;
-        }
-        // The distance each track needs to travel for the robot to turn a certain angle.
-        // For a 360-degree turn of the robot, the center of each track travels
-        // along a circle. The radius of this circle is TRACK_WIDTH_INCHES / 2.
-        // The circumference of this circle is PI * TRACK_WIDTH_INCHES.
-        // This is the distance one track travels *relative to the other* for a 360-degree turn.
-        // So, one track moves forward by (PI * TRACK_WIDTH_INCHES) / 2
-        // and the other moves backward by (PI * TRACK_WIDTH_INCHES) / 2.
-        // The absolute distance covered by one track for a 360-degree robot turn is (PI * TRACK_WIDTH_INCHES) / 2.
-
-        double distanceOneTrackTravelsFor360Turn = (Math.PI * TRACK_WIDTH_INCHES) / 2.0;
-        double ticksFor360TurnOneTrack = distanceOneTrackTravelsFor360Turn * TICKS_PER_INCH;
-        return ticksFor360TurnOneTrack / 360.0; // Ticks per degree for one track
-    }
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -209,8 +228,8 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         claw = hardwareMap.get(Servo.class, "claw");
 
         // Set initial servo positions
-        wristPosition = WRIST_FOLDED;
-        clawPosition = CLAW_STOWED;
+        wristPosition = WRIST_FOLDED_POS;
+        clawPosition = CLAW_STOWED_POS;
         wrist.setPosition(wristPosition);
         claw.setPosition(clawPosition);
 
@@ -241,88 +260,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         armTargetPos = arm_motor.getCurrentPosition();
         slideTargetPos = slide_motor.getCurrentPosition();
     }
-    // --- Helper Methods for Drivetrain Control ---
 
-    /**
-     * Sets the mode for all drive motors.
-     * @param runMode The DcMotor.RunMode to set.
-     */
-    private void setDriveMotorMode(DcMotor.RunMode runMode) {
-        left_front_drive.setMode(runMode);
-        left_rear_drive.setMode(runMode);
-        right_front_drive.setMode(runMode);
-        right_rear_drive.setMode(runMode);
-    }
-
-    /**
-     * Sets the power for all drive motors.
-     * Useful for stopping motors or setting a common power during RUN_TO_POSITION.
-     * @param power The power level (-1.0 to 1.0).
-     */
-    private void setDriveMotorPower(double power) {
-        left_front_drive.setPower(power);
-        left_rear_drive.setPower(power);
-        right_front_drive.setPower(power);
-        right_rear_drive.setPower(power);
-    }
-
-    /**
-     * Moves the robot forward or backward a specific distance.
-     * This method initiates the move; completion is handled by checking motor.isBusy().
-     * Joystick input can interrupt this move.
-     * @param distanceInches The distance to move in inches (positive for forward, negative for backward).
-     */
-    private void moveForwardDistance(double distanceInches) {
-
-        int targetTicks = (int) (distanceInches * TICKS_PER_INCH);
-
-        // Reset encoders before setting new target for relative movement
-        // This ensures the move is relative to the current position.
-        setDriveMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        left_front_drive.setTargetPosition(targetTicks);
-        left_rear_drive.setTargetPosition(targetTicks);
-        right_front_drive.setTargetPosition(targetTicks);
-        right_rear_drive.setTargetPosition(targetTicks);
-
-        // Set mode to RUN_TO_POSITION
-        setDriveMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        // Set power for the move
-        setDriveMotorPower(PRESET_MOVE_SPEED);
-        telemetry.addData("Preset Move", "Forward: %.2f inches", distanceInches);
-    }
-
-    /**
-     * Turns the robot a specific angle.
-     * This method initiates the turn; completion is handled by checking motor.isBusy().
-     * Joystick input can interrupt this move.
-     * @param angleInDegrees The angle to turn in degrees (positive for left/counter-clockwise, negative for right/clockwise).
-     */
-    private void turnAngle(double angleInDegrees) {
-
-        // For a point turn, one side moves forward, the other backward.
-        // The TICKS_PER_DEGREE_ONE_TRACK should represent the ticks one track needs to move
-        // for one degree of robot rotation.
-        int turnTicksOneTrack = (int) (angleInDegrees * calculateTicksPerDegree());
-
-        // Reset encoders before setting new target for relative movement
-        setDriveMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        // Positive angle = turn left (left tracks reverse, right tracks forward)
-        // Negative angle = turn right (left tracks forward, right tracks reverse)
-        left_front_drive.setTargetPosition(-turnTicksOneTrack);
-        left_rear_drive.setTargetPosition(-turnTicksOneTrack);
-        right_front_drive.setTargetPosition(turnTicksOneTrack);
-        right_rear_drive.setTargetPosition(turnTicksOneTrack);
-
-        // Set mode to RUN_TO_POSITION
-        setDriveMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        // Set power for the turn
-        setDriveMotorPower(PRESET_TURN_SPEED);
-        telemetry.addData("Preset Move", "Turn: %.2f degrees", angleInDegrees);
-    }
     /*
      * Code to run REPEATEDLY after the driver hits START but before they hit STOP
      */
@@ -442,13 +380,13 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
 
                 // D-pad Up: Move forward 6 inches
                 if (gamepad1.dpad_up && !gamepad1_dpad_up_pressed_last_frame) {
-                    moveForwardDistance(6.0);
+                    moveForwardDistance(PRESET_MOVE_DISTANCE);
                 }
                 gamepad1_dpad_up_pressed_last_frame = gamepad1.dpad_up;
 
                 // D-pad Down: Move backward 6 inches
                 if (gamepad1.dpad_down && !gamepad1_dpad_down_pressed_last_frame) {
-                    moveForwardDistance(-6.0);
+                    moveForwardDistance(-PRESET_MOVE_DISTANCE);
                 }
                 gamepad1_dpad_down_pressed_last_frame = gamepad1.dpad_down;
 
@@ -467,15 +405,15 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         }
 
         // --- Claw and Wrist Control ---
-        clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * CLAW_SPEED;
+        clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * CLAW_MANUAL_INCREMENT;
         // Claw limit
         if (clawPosition > 1) clawPosition = 1;
         else if (clawPosition < 0) clawPosition = 0;
         claw.setPosition(clawPosition);
 
         if (!armPresetActivatedThisLoop) { // Only allow manual wrist if no arm/wrist preset was just hit
-            if (gamepad1.right_bumper) wristPosition += WRIST_SPEED;
-            else if (gamepad1.left_bumper) wristPosition -= WRIST_SPEED;
+            if (gamepad1.right_bumper) wristPosition += WRIST_MANUAL_INCREMENT;
+            else if (gamepad1.left_bumper) wristPosition -= WRIST_MANUAL_INCREMENT;
         }
         //Wrist limit (apply regardless of preset or manual)
         if (wristPosition > 1) wristPosition = 1;
@@ -485,9 +423,9 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         // --- Arm and Slide Control (Your Existing Logic for continuous control) ---
         // Adjust target positions based on right stick
         if (!armPresetActivatedThisLoop) {
-            armTargetPos = armTargetPos - (int) (gamepad1.right_stick_y * ARM_INCREMENT);
+            armTargetPos = armTargetPos - (int) (gamepad1.right_stick_y * ARM_MANUAL_INCREMENT);
         }
-        slideTargetPos = slideTargetPos + (int) (gamepad1.right_stick_x * SLIDE_INCREMENT);
+        slideTargetPos = slideTargetPos + (int) (gamepad1.right_stick_x * SLIDE_MANUAL_INCREMENT);
 
         // Apply limits (optional, if you define ARM_MIN/MAX, SLIDE_MIN/MAX)
         // if (armTargetPos > ARM_MAX) armTargetPos = ARM_MAX;
@@ -507,8 +445,8 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
             slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
         // Set power for arm and slide. Power should be positive as direction is handled by target position.
-        arm_motor.setPower(ARM_POWER); // Adjust power as needed for arm responsiveness
-        slide_motor.setPower(SLIDE_POWER); // Adjust power as needed for slide responsiveness
+        arm_motor.setPower(ARM_RTP_MAX_SPEED); // Adjust power as needed for arm responsiveness
+        slide_motor.setPower(SLIDE_RTP_MAX_SPEED); // Adjust power as needed for slide responsiveness
 
 
         // --- Telemetry ---
@@ -545,4 +483,110 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         telemetry.addData(">", "Robot Stopped.");
         telemetry.update();
     }
+
+
+    // Helper to calculate Ticks Per Degree for robot turning
+    private static double calculateTicksPerDegree() {
+        if (TRACK_WIDTH_INCHES <= 0 || TICKS_PER_INCH <= 0) {
+            // Prevent division by zero or nonsensical values if constants aren't set properly
+            return 0;
+        }
+        // The distance each track needs to travel for the robot to turn a certain angle.
+        // For a 360-degree turn of the robot, the center of each track travels
+        // along a circle. The radius of this circle is TRACK_WIDTH_INCHES / 2.
+        // The circumference of this circle is PI * TRACK_WIDTH_INCHES.
+        // This is the distance one track travels *relative to the other* for a 360-degree turn.
+        // So, one track moves forward by (PI * TRACK_WIDTH_INCHES) / 2
+        // and the other moves backward by (PI * TRACK_WIDTH_INCHES) / 2.
+        // The absolute distance covered by one track for a 360-degree robot turn is (PI * TRACK_WIDTH_INCHES) / 2.
+
+        double distanceOneTrackTravelsFor360Turn = (Math.PI * TRACK_WIDTH_INCHES) / 2.0;
+        double ticksFor360TurnOneTrack = distanceOneTrackTravelsFor360Turn * TICKS_PER_INCH;
+        return ticksFor360TurnOneTrack / 360.0; // Ticks per degree for one track
+    }
+
+    // --- Helper Methods for Drivetrain Control ---
+
+    /**
+     * Sets the mode for all drive motors.
+     * @param runMode The DcMotor.RunMode to set.
+     */
+    private void setDriveMotorMode(DcMotor.RunMode runMode) {
+        left_front_drive.setMode(runMode);
+        left_rear_drive.setMode(runMode);
+        right_front_drive.setMode(runMode);
+        right_rear_drive.setMode(runMode);
+    }
+
+    /**
+     * Sets the power for all drive motors.
+     * Useful for stopping motors or setting a common power during RUN_TO_POSITION.
+     * @param power The power level (-1.0 to 1.0).
+     */
+    private void setDriveMotorPower(double power) {
+        left_front_drive.setPower(power);
+        left_rear_drive.setPower(power);
+        right_front_drive.setPower(power);
+        right_rear_drive.setPower(power);
+    }
+
+    /**
+     * Moves the robot forward or backward a specific distance.
+     * This method initiates the move; completion is handled by checking motor.isBusy().
+     * Joystick input can interrupt this move.
+     * @param distanceInches The distance to move in inches (positive for forward, negative for backward).
+     */
+    private void moveForwardDistance(double distanceInches) {
+
+        int targetTicks = (int) (distanceInches * TICKS_PER_INCH);
+
+        // Reset encoders before setting new target for relative movement
+        // This ensures the move is relative to the current position.
+        setDriveMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        left_front_drive.setTargetPosition(targetTicks);
+        left_rear_drive.setTargetPosition(targetTicks);
+        right_front_drive.setTargetPosition(targetTicks);
+        right_rear_drive.setTargetPosition(targetTicks);
+
+        // Set mode to RUN_TO_POSITION
+        setDriveMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        // Set power for the move
+        setDriveMotorPower(PRESET_MOVE_SPEED);
+        telemetry.addData("Preset Move", "Forward: %.2f inches", distanceInches);
+    }
+
+    /**
+     * Turns the robot a specific angle.
+     * This method initiates the turn; completion is handled by checking motor.isBusy().
+     * Joystick input can interrupt this move.
+     * @param angleInDegrees The angle to turn in degrees (positive for left/counter-clockwise, negative for right/clockwise).
+     */
+    private void turnAngle(double angleInDegrees) {
+
+        // For a point turn, one side moves forward, the other backward.
+        // The TICKS_PER_DEGREE_ONE_TRACK should represent the ticks one track needs to move
+        // for one degree of robot rotation.
+        int turnTicksOneTrack = (int) (angleInDegrees * calculateTicksPerDegree());
+
+        // Reset encoders before setting new target for relative movement
+        setDriveMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        // Positive angle = turn left (left tracks reverse, right tracks forward)
+        // Negative angle = turn right (left tracks forward, right tracks reverse)
+        left_front_drive.setTargetPosition(-turnTicksOneTrack);
+        left_rear_drive.setTargetPosition(-turnTicksOneTrack);
+        right_front_drive.setTargetPosition(turnTicksOneTrack);
+        right_rear_drive.setTargetPosition(turnTicksOneTrack);
+
+        // Set mode to RUN_TO_POSITION
+        setDriveMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        // Set power for the turn
+        setDriveMotorPower(PRESET_TURN_SPEED);
+        telemetry.addData("Preset Move", "Turn: %.2f degrees", angleInDegrees);
+    }
 }
+
+
