@@ -123,7 +123,7 @@ public class MorrisSkillsUSA extends OpMode{
     public static boolean turtleMode = false;
     public static boolean isBackButtonPressed = false;
     public static final double TURTLE_MODE_SPEED = .2;
-    public static double driveSpeed = 1;
+    public static double driveSpeed = 1.0;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -249,7 +249,7 @@ public class MorrisSkillsUSA extends OpMode{
         double rightScaledPower = rightPowerRaw / denominator;
 
         // --- Apply Overall Drive Speed Multiplier (e.g., for turtle mode) ---
-        // Assuming 'driveSpeed' is a variable like 1.0 for full speed, 0.5 for turtle mode
+        // Assuming 'driveSpeed' is a variable like 1.0 for full speed, 0.2 for turtle mode
         double finalLeftPower = leftScaledPower * driveSpeed;
         double finalRightPower = rightScaledPower * driveSpeed;
 
@@ -329,5 +329,23 @@ public class MorrisSkillsUSA extends OpMode{
      */
     @Override
     public void stop() {
+        // Stop all motors and release resources
+        right_front_drive.setPower(0);
+        right_rear_drive.setPower(0);
+        left_front_drive.setPower(0);
+        left_rear_drive.setPower(0);
+        arm_motor.setPower(0);
+        slide_motor.setPower(0);
+
+        // Optional: Set motors to a specific mode on stop if desired, e.g., COAST
+        // setDriveMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Or BRAKE
+        // arm_motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // slide_motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        if (visionPortal != null) {
+            visionPortal.close();
+        }
+        telemetry.addData(">", "Robot Stopped.");
+        telemetry.update();
     }
 }

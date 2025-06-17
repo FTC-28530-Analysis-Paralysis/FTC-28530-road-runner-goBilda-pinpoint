@@ -86,7 +86,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     // public static final double CLAW_SPEED  = 0.02 ; // Not used, direct calculation from trigger
     public static final double ARM_UP_POWER    =  0.75 ;   // Adjusted for RUN_TO_POSITION
     public static final double ARM_DOWN_POWER  =  0.75 ;   // Adjusted for RUN_TO_POSITION (direction handled by target)
-    public static final int ARM_INCREMENT = 20; // Adjusted for smoother control with right_stick_y
+    public static final int ARM_INCREMENT = 5; // Adjusted for smoother control with right_stick_y
     public static int armTargetPos;
     // public static final int ARM_MIN = 0; // Your commented out limits
     // public static final int ARM_MAX = 2000; // Example, set your actual max
@@ -101,9 +101,23 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     public static final double WRIST_FOLDED = 0.28; // Initial folded position
 
     public static boolean turtleMode = false;
-    public static boolean isBackButtonPressed = false; // For turtle mode toggle
-    public static final double TURTLE_MODE_SPEED = .5;
+    public static boolean gamepad1_back_pressed_last_frame = false; // For turtle mode toggle
+    public static final double TURTLE_MODE_SPEED = .2;
     public static double driveSpeed = 1.0; // Current drive speed multiplier
+
+    // --- Constants for Arm/Wrist Presets ---
+    public static final int ARM_PRESET_HIGH_TICKS = 900; //
+    public static final double WRIST_PRESET_HIGH_POS = 1.0; // Tipped up // TODO: Placeholder - adjust after testing
+
+    public static final int ARM_PRESET_MIDDLE_TICKS = 450; /// TODO: Placeholder - adjust after testing
+    public static final double WRIST_PRESET_MIDDLE_POS = 0.75; // Tipped forward // TODO: Placeholder - adjust after testing
+
+    public static final int ARM_PRESET_LOW_TICKS = 100;  /// TODO: Placeholder - adjust after testing
+
+    // Add boolean flags for button presses (edge detection)
+    private boolean gamepad1_y_pressed_last_frame = false;
+    private boolean gamepad1_x_pressed_last_frame = false;
+    private boolean gamepad1_a_pressed_last_frame = false;
 
     // --- D-Pad Button States for Preset Moves ---
     private boolean gamepad1_dpad_up_pressed_last_frame = false;
@@ -113,6 +127,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
 
     // --- Joystick Override Threshold ---
     private static final double JOYSTICK_THRESHOLD = 0.1; // Minimum joystick input to be considered active for override
+
     // Helper to calculate Ticks Per Degree for robot turning
     private static double calculateTicksPerDegree() {
         if (TRACK_WIDTH_INCHES <= 0 || TICKS_PER_INCH <= 0) {
@@ -318,14 +333,43 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
                 Math.abs(joystickTurnInput) > JOYSTICK_THRESHOLD;
 
         // --- Turtle Mode Logic ---
-        if (gamepad1.back && !isBackButtonPressed) {
-            isBackButtonPressed = true; // Latch: Record that the button was pressed
-        } else if (!gamepad1.back && isBackButtonPressed) {
-            isBackButtonPressed = false; // Latch: Button released, now toggle the mode
+        if (gamepad1.back && !gamepad1_back_pressed_last_frame) {
+            gamepad1_back_pressed_last_frame = true; // Latch: Record that the button was pressed
+        } else if (!gamepad1.back && gamepad1_back_pressed_last_frame) {
+            gamepad1_back_pressed_last_frame = false; // Latch: Button released, now toggle the mode
             turtleMode = !turtleMode;
         }
         driveSpeed = turtleMode ? TURTLE_MODE_SPEED : 1.0;
 
+        // --- Arm and Wrist Preset Logic ---
+        boolean armPresetActivatedThisLoop = false;
+
+        // Y Button: High Position
+        if (gamepad1.y && !gamepad1_y_pressed_last_frame) {
+            armTargetPos = ARM_PRESET_HIGH_TICKS;
+            wristPosition = WRIST_PRESET_HIGH_POS;
+            armPresetActivatedThisLoop = true;
+            telemetry.addData("Preset", "Arm/Wrist HIGH");
+        }
+        gamepad1_y_pressed_last_frame = gamepad1.y;
+
+        // X Button: Middle Position
+        if (gamepad1.x && !gamepad1_x_pressed_last_frame) {
+            armTargetPos = ARM_PRESET_MIDDLE_TICKS;
+            wristPosition = WRIST_PRESET_MIDDLE_POS;
+            armPresetActivatedThisLoop = true;
+            telemetry.addData("Preset", "Arm/Wrist MIDDLE");
+        }
+        gamepad1_x_pressed_last_frame = gamepad1.x;
+
+        // A Button: Low Position
+        if (gamepad1.a && !gamepad1_a_pressed_last_frame) {
+            armTargetPos = ARM_PRESET_LOW_TICKS;
+            wristPosition = WRIST_PRESET_MIDDLE_POS;
+            armPresetActivatedThisLoop = true;
+            telemetry.addData("Preset", "Arm/Wrist LOW");
+        }
+        gamepad1_a_pressed_last_frame = gamepad1.a;
 
         // --- Primary Drive Control Logic ---
         if (significantJoystickInput) {
@@ -420,24 +464,28 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
             }
         }
 
-        // --- Claw and Wrist Control (Your Existing Logic) ---
+        // --- Claw and Wrist Control ---
         clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * .03;
         // Claw limit
         if (clawPosition > 1) clawPosition = 1;
         else if (clawPosition < 0) clawPosition = 0;
         claw.setPosition(clawPosition);
 
-        if (gamepad1.right_bumper) wristPosition += 0.01;
-        else if (gamepad1.left_bumper) wristPosition -= 0.01;
-        //Wrist limit
+        if (!armPresetActivatedThisLoop) { // Only allow manual wrist if no arm/wrist preset was just hit
+            if (gamepad1.right_bumper) wristPosition += 0.01; // Consider making 0.01 a constant
+            else if (gamepad1.left_bumper) wristPosition -= 0.01; // Consider making 0.01 a constant
+        }
+        //Wrist limit (apply regardless of preset or manual)
         if (wristPosition > 1) wristPosition = 1;
         else if (wristPosition < 0) wristPosition = 0;
-        wrist.setPosition(wristPosition);
+        wrist.setPosition(wristPosition); // Set wrist position
 
         // --- Arm and Slide Control (Your Existing Logic for continuous control) ---
         // Adjust target positions based on right stick
-        armTargetPos = armTargetPos - (int) (gamepad1.right_stick_y * ARM_INCREMENT);
-        slideTargetPos = slide_motor.getCurrentPosition() + (int) (gamepad1.right_stick_x * SLIDE_INCREMENT); // Using current pos as base for increment
+        if (!armPresetActivatedThisLoop) {
+            armTargetPos = armTargetPos - (int) (gamepad1.right_stick_y * ARM_INCREMENT);
+        }
+        slideTargetPos = slideTargetPos + (int) (gamepad1.right_stick_x * SLIDE_INCREMENT);
 
         // Apply limits (optional, if you define ARM_MIN/MAX, SLIDE_MIN/MAX)
         // if (armTargetPos > ARM_MAX) armTargetPos = ARM_MAX;
