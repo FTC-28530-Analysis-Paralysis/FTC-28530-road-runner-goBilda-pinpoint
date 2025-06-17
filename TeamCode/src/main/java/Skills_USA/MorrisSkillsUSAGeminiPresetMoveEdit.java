@@ -80,12 +80,14 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     // --- Constants for Preset Drivetrain Moves ---
     public static final double PRESET_MOVE_SPEED = 0.6; // Speed for RUN_TO_POSITION (0.0 to 1.0)
     public static final double PRESET_TURN_SPEED = 0.4; // Speed for RUN_TO_POSITION (0.0 to 1.0)
+    public static final double PRESET_MOVE_DISTANCE = 6; // Distance for RUN_TO_POSITION (in inches)
+    public static final double PRESET_TURN_ANGLE = 22.5; // Angle for RUN_TO_POSITION (in degrees)
 
     private static final boolean USE_WEBCAM = true;
-    // public static final double MID_SERVO   =  0 ; // Not used in current logic
-    // public static final double CLAW_SPEED  = 0.02 ; // Not used, direct calculation from trigger
-    public static final double ARM_UP_POWER    =  0.75 ;   // Adjusted for RUN_TO_POSITION
-    public static final double ARM_DOWN_POWER  =  0.75 ;   // Adjusted for RUN_TO_POSITION (direction handled by target)
+    public static final double CLAW_SPEED  = 0.03 ; // Not used, direct calculation from trigger
+    public static final double WRIST_SPEED = 0.01 ;   // Adjusted for RUN_TO_POSITION
+    public static final double ARM_POWER =  0.75 ;   // Adjusted for RUN_TO_POSITION
+    public static final double SLIDE_POWER = 0.75 ;   // Adjusted for RUN_TO_POSITION
     public static final int ARM_INCREMENT = 5; // Adjusted for smoother control with right_stick_y
     public static int armTargetPos;
     // public static final int ARM_MIN = 0; // Your commented out limits
@@ -452,28 +454,28 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
 
                 // D-pad Right: Turn right 22.5 degrees
                 if (gamepad1.dpad_right && !gamepad1_dpad_right_pressed_last_frame) {
-                    turnAngle(-22.5); // Negative angle for turning right
+                    turnAngle(-PRESET_TURN_ANGLE); // Negative angle for turning right
                 }
                 gamepad1_dpad_right_pressed_last_frame = gamepad1.dpad_right;
 
                 // D-pad Left: Turn left 22.5 degrees
                 if (gamepad1.dpad_left && !gamepad1_dpad_left_pressed_last_frame) {
-                    turnAngle(22.5); // Positive angle for turning left
+                    turnAngle(PRESET_TURN_ANGLE); // Positive angle for turning left
                 }
                 gamepad1_dpad_left_pressed_last_frame = gamepad1.dpad_left;
             }
         }
 
         // --- Claw and Wrist Control ---
-        clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * .03;
+        clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * CLAW_SPEED;
         // Claw limit
         if (clawPosition > 1) clawPosition = 1;
         else if (clawPosition < 0) clawPosition = 0;
         claw.setPosition(clawPosition);
 
         if (!armPresetActivatedThisLoop) { // Only allow manual wrist if no arm/wrist preset was just hit
-            if (gamepad1.right_bumper) wristPosition += 0.01; // Consider making 0.01 a constant
-            else if (gamepad1.left_bumper) wristPosition -= 0.01; // Consider making 0.01 a constant
+            if (gamepad1.right_bumper) wristPosition += WRIST_SPEED;
+            else if (gamepad1.left_bumper) wristPosition -= WRIST_SPEED;
         }
         //Wrist limit (apply regardless of preset or manual)
         if (wristPosition > 1) wristPosition = 1;
@@ -505,8 +507,8 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
             slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
         // Set power for arm and slide. Power should be positive as direction is handled by target position.
-        arm_motor.setPower(0.8); // Adjust power as needed for arm responsiveness
-        slide_motor.setPower(0.8); // Adjust power as needed for slide responsiveness
+        arm_motor.setPower(ARM_POWER); // Adjust power as needed for arm responsiveness
+        slide_motor.setPower(SLIDE_POWER); // Adjust power as needed for slide responsiveness
 
 
         // --- Telemetry ---
