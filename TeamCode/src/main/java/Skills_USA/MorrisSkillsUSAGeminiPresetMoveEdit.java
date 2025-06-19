@@ -1,32 +1,3 @@
-/* Copyright (c) 2017 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package Skills_USA;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -97,7 +68,13 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     public static final double PRESET_MOVE_SPEED = 0.6;     // Default power/speed for preset forward/backward movements (0.0 to 1.0)
     public static final double PRESET_TURN_SPEED = 0.4;     // Default power/speed for preset turns (0.0 to 1.0)
     public static final double PRESET_MOVE_DISTANCE = 6.0;  // Default distance for d-pad forward/backward preset (inches)
-    public static final double PRESET_TURN_ANGLE = 22.5;    // Default angle for d-pad turn preset (degrees)
+    public static final double PRESET_TURN_ANGLE = 22.5;    // Default angle for d-pad turn preset (degrees) TODO: Test by setting this angle much higher, say 720 degrees.
+
+    public static final double TURN_CALIBRATION_MULTIPLIER = 1.0; // Start at 1.0. This adjustment is to be made after empirical testing to account for track slipping, scrubbing, etc.
+    // TODO: Increase if robot under-turns.
+    // Decrease if robot over-turns.
+    // Example: If robot turns 330deg when 360deg is commanded,
+    // new_multiplier = old_multiplier * (360.0 / 330.0)
 
     public static boolean turtleMode = false;               // State variable for turtle mode (reduced speed)
     public static final double TURTLE_MODE_SPEED = 0.2;     // Speed multiplier when turtle mode is active
@@ -134,16 +111,18 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     // --- Arm & Wrist Preset Positions ---
     // High Preset - Tag mailbox with arm and wrist tipped up so the robot can just drive forward until it makes contact
     public static final int ARM_PRESET_HIGH_TICKS = 900;
+    public static final int SLIDE_PRESET_HIGH_TICKS = 0;
     public static final double WRIST_PRESET_HIGH_POS = 1.0;    // Wrist tipped up
 
     // Middle Preset - Lift ordnance off the ground and hold it high enough to be deposited in containment box
-    public static final int ARM_PRESET_MIDDLE_TICKS = 450;    // TODO: Placeholder - adjust after testing
-    public static final double WRIST_PRESET_MIDDLE_POS = 0.75; // TODO: Placeholder - adjust after testing
+    public static final int ARM_PRESET_MIDDLE_TICKS = 52;    // TODO: Placeholder - adjust after testing
+    public static final int SLIDE_PRESET_MIDDLE_TICKS = 0;
+    public static final double WRIST_PRESET_MIDDLE_POS = WRIST_PRESET_HIGH_POS;
 
     // Low Preset / Intake Preset - Move arm and wrist next to ground to pick up ordnance
-    public static final int ARM_PRESET_LOW_TICKS = 100;       // TODO: Placeholder - adjust after testing
-    public static final double WRIST_PRESET_LOW_POS = WRIST_PRESET_MIDDLE_POS;   // TODO: Placeholder - adjust after testing (might be same as middle for intake)
-
+    public static final int ARM_PRESET_LOW_TICKS = -315;       // TODO: Placeholder - adjust after testing
+    public static final int SLIDE_PRESET_LOW_TICKS = 345;
+    public static final double WRIST_PRESET_LOW_POS = WRIST_PRESET_HIGH_POS;
 
 //--------------------------------------------------------------------------------------------------
 // Gamepad Button State Variables (for edge detection)
@@ -286,6 +265,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         // Y Button: High Position
         if (gamepad1.y && !gamepad1_y_pressed_last_frame) {
             armTargetPos = ARM_PRESET_HIGH_TICKS;
+            slideTargetPos = SLIDE_PRESET_HIGH_TICKS;
             wristPosition = WRIST_PRESET_HIGH_POS;
             armPresetActivatedThisLoop = true;
             telemetry.addData("Preset", "Arm/Wrist HIGH");
@@ -295,6 +275,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         // X Button: Middle Position
         if (gamepad1.x && !gamepad1_x_pressed_last_frame) {
             armTargetPos = ARM_PRESET_MIDDLE_TICKS;
+            slideTargetPos = SLIDE_PRESET_MIDDLE_TICKS;
             wristPosition = WRIST_PRESET_MIDDLE_POS;
             armPresetActivatedThisLoop = true;
             telemetry.addData("Preset", "Arm/Wrist MIDDLE");
@@ -304,7 +285,8 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         // A Button: Low Position
         if (gamepad1.a && !gamepad1_a_pressed_last_frame) {
             armTargetPos = ARM_PRESET_LOW_TICKS;
-            wristPosition = WRIST_PRESET_MIDDLE_POS;
+            slideTargetPos = SLIDE_PRESET_LOW_TICKS;
+            wristPosition = WRIST_PRESET_LOW_POS;
             armPresetActivatedThisLoop = true;
             telemetry.addData("Preset", "Arm/Wrist LOW");
         }
@@ -447,7 +429,6 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         arm_motor.setPower(ARM_RTP_MAX_SPEED); // Adjust power as needed for arm responsiveness
         slide_motor.setPower(SLIDE_RTP_MAX_SPEED); // Adjust power as needed for slide responsiveness
 
-
         // --- Telemetry ---
         // Drive telemetry is handled within the if/else blocks for joystick/preset
         telemetry.addData("Turtle Mode", turtleMode ? "ON" : "OFF");
@@ -499,9 +480,12 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         // and the other moves backward by (PI * TRACK_WIDTH_INCHES) / 2.
         // The absolute distance covered by one track for a 360-degree robot turn is (PI * TRACK_WIDTH_INCHES) / 2.
 
-        double distanceOneTrackTravelsFor360Turn = (Math.PI * TRACK_WIDTH_INCHES) / 2.0;
+        double distanceOneTrackTravelsFor360Turn = Math.PI * TRACK_WIDTH_INCHES; // Used to be (Math.PI * TRACK_WIDTH_INCHES) / 2.0 but that math seems wrong
         double ticksFor360TurnOneTrack = distanceOneTrackTravelsFor360Turn * TICKS_PER_INCH;
-        return ticksFor360TurnOneTrack / 360.0; // Ticks per degree for one track
+        double rawTicksPerDegree = ticksFor360TurnOneTrack / 360.0;
+
+        // Apply the calibration multiplier. This adjusts for any error caused by track slipping and scrubbing, etc.
+        return rawTicksPerDegree * TURN_CALIBRATION_MULTIPLIER;
     }
 
     // --- Helper Methods for Drivetrain Control ---
