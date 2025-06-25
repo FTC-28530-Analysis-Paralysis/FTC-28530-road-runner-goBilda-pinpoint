@@ -1,3 +1,32 @@
+/* Copyright (c) 2017 FIRST. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted (subject to the limitations in the disclaimer below) provided that
+ * the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list
+ * of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of FIRST nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior written permission.
+ *
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
+ * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package Skills_USA;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -11,9 +40,9 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 
-@TeleOp(name="Tank Track Control w/ Preset Moves", group="Robot")
+@TeleOp(name="Atlanta Preset Moves", group="Robot")
 //@Disabled
-public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
+public class AtlantaGeminiPresetMoves extends OpMode{
 
 //--------------------------------------------------------------------------------------------------
 // OpMode Class Members
@@ -67,14 +96,14 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     // --- Drivetrain Control Parameters ---
     public static final double PRESET_MOVE_SPEED = 0.6;     // Default power/speed for preset forward/backward movements (0.0 to 1.0)
     public static final double PRESET_TURN_SPEED = 0.4;     // Default power/speed for preset turns (0.0 to 1.0)
-    public static final double PRESET_MOVE_DISTANCE = 12;  // Default distance for d-pad forward/backward preset (inches)
-    public static final double PRESET_TURN_ANGLE = 45;    // Default angle for d-pad turn preset (degrees) TODO: Test by setting this angle much higher, say 720 degrees.
+    public static final double PRESET_MOVE_DISTANCE = 6.0;  // Default distance for d-pad forward/backward preset (inches)
+    public static final double PRESET_TURN_ANGLE = 22.5;    // Default angle for d-pad turn preset (degrees) TODO: Test by setting this angle much higher, say 720 degrees.
 
-    public static final double TURN_CALIBRATION_MULTIPLIER = 1.1612 * (720.0/710); // Start at 1.0. This adjustment is to be made after empirical testing to account for track slipping, scrubbing, etc.
+    public static final double TURN_CALIBRATION_MULTIPLIER = 1.0 * (720.0 / 620.0); // Start at 1.0. This adjustment is to be made after empirical testing to account for track slipping, scrubbing, etc.
     // TODO: Increase if robot under-turns.
     // Decrease if robot over-turns.
-    // Example: If robot turns 620 deg when 720deg is commanded,
-    // new_multiplier = old_multiplier * (720.0 /620.0)
+    // Example: If robot turns 330deg when 360deg is commanded,
+    // new_multiplier = old_multiplier * (360.0 / 330.0)
 
     public static boolean turtleMode = false;               // State variable for turtle mode (reduced speed)
     public static final double TURTLE_MODE_SPEED = 0.2;     // Speed multiplier when turtle mode is active
@@ -101,12 +130,12 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     // --- Wrist Control ---
     public static final double WRIST_MANUAL_INCREMENT = 0.01; // Servo position change per bumper press cycle
     public static double wristPosition = 0.0;               // Target position for the wrist servo (0.0 to 1.0)
-    public static final double WRIST_FOLDED_POS = 0.28;     // Initial/stowed position for the wrist
+    public static final double WRIST_FOLDED_POS = 0;     // Initial/stowed position for the wrist
 
     // --- Claw Control ---
     public static final double CLAW_MANUAL_INCREMENT = 0.03; // Servo position change based on trigger input
     public static double clawPosition = 0.0;                // Target position for the claw servo (0.0 to 1.0)
-    public static final double CLAW_STOWED_POS = 1.0;      // Initial/stowed position for the claw
+    public static final double CLAW_STOWED_POS = 0;      // Initial/stowed position for the claw
 
     // --- Arm & Wrist Preset Positions ---
     // High Preset - Tag mailbox with arm and wrist tipped up so the robot can just drive forward until it makes contact
@@ -115,12 +144,12 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     public static final double WRIST_PRESET_HIGH_POS = 1.0;    // Wrist tipped up
 
     // Middle Preset - Lift ordnance off the ground and hold it high enough to be deposited in containment box
-    public static final int ARM_PRESET_MIDDLE_TICKS = 220;    // TODO: Placeholder - adjust after testing
+    public static final int ARM_PRESET_MIDDLE_TICKS = 52;    // TODO: Placeholder - adjust after testing
     public static final int SLIDE_PRESET_MIDDLE_TICKS = 0;
     public static final double WRIST_PRESET_MIDDLE_POS = WRIST_PRESET_HIGH_POS;
 
     // Low Preset / Intake Preset - Move arm and wrist next to ground to pick up ordnance
-    public static final int ARM_PRESET_LOW_TICKS = -243;       // TODO: Placeholder - adjust after testing
+    public static final int ARM_PRESET_LOW_TICKS = -315;       // TODO: Placeholder - adjust after testing
     public static final int SLIDE_PRESET_LOW_TICKS = 345;
     public static final double WRIST_PRESET_LOW_POS = WRIST_PRESET_HIGH_POS;
 
@@ -162,7 +191,8 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         } else {
             builder.setCamera(BuiltinCameraDirection.BACK);
         }
-        visionPortal = builder.build();
+        // visionPortal = builder.build(); // Initialize if you are using vision features
+
         // Define and Initialize Motors
         left_front_drive = hardwareMap.get(DcMotorEx.class, "left_front_drive");
         left_rear_drive = hardwareMap.get(DcMotorEx.class, "left_rear_drive");
@@ -243,79 +273,75 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
      */
     @Override
     public void loop() {
+        // --- Get Joystick Inputs for Drive ---
         double joystickDriveInput = -gamepad1.left_stick_y; // Negative because joystick forward is negative
         double joystickTurnInput = -gamepad1.left_stick_x;  // Standard arcade: left stick X for turn
 
         boolean significantJoystickInput = Math.abs(joystickDriveInput) > JOYSTICK_THRESHOLD ||
                 Math.abs(joystickTurnInput) > JOYSTICK_THRESHOLD;
 
-        // --- Turtle Mode Logic ---
+        // --- Turtle Mode Latching & Speed Setting ---
         if (gamepad1.back && !gamepad1_back_pressed_last_frame) {
-            gamepad1_back_pressed_last_frame = true; // Latch: Record that the button was pressed
+            // This is the rising edge of the button press
         } else if (!gamepad1.back && gamepad1_back_pressed_last_frame) {
-            gamepad1_back_pressed_last_frame = false; // Latch: Button released, now toggle the mode
+            // This is the falling edge (release), toggle the mode
             turtleMode = !turtleMode;
         }
+        gamepad1_back_pressed_last_frame = gamepad1.back; // Update last state
         driveSpeed = turtleMode ? TURTLE_MODE_SPEED : 1.0;
 
-        // --- Arm and Wrist Preset Logic ---
-        boolean armPresetActivatedThisLoop = false;
 
-        // Y Button: High Position
-        if (gamepad1.y && !gamepad1_y_pressed_last_frame) {
-            armTargetPos = ARM_PRESET_HIGH_TICKS;
-            slideTargetPos = SLIDE_PRESET_HIGH_TICKS;
-            wristPosition = WRIST_PRESET_HIGH_POS;
-            armPresetActivatedThisLoop = true;
-            telemetry.addData("Preset", "Arm/Wrist HIGH");
+        // --- D-Pad Button Latching for Drive Presets ---
+        boolean dpadUpTriggeredThisLoop = false;
+        if (gamepad1.dpad_up && !gamepad1_dpad_up_pressed_last_frame) {
+            dpadUpTriggeredThisLoop = true;
         }
-        gamepad1_y_pressed_last_frame = gamepad1.y;
+        gamepad1_dpad_up_pressed_last_frame = gamepad1.dpad_up;
 
-        // X Button: Middle Position
-        if (gamepad1.x && !gamepad1_x_pressed_last_frame) {
-            armTargetPos = ARM_PRESET_MIDDLE_TICKS;
-            slideTargetPos = SLIDE_PRESET_MIDDLE_TICKS;
-            wristPosition = WRIST_PRESET_MIDDLE_POS;
-            armPresetActivatedThisLoop = true;
-            telemetry.addData("Preset", "Arm/Wrist MIDDLE");
+        boolean dpadDownTriggeredThisLoop = false;
+        if (gamepad1.dpad_down && !gamepad1_dpad_down_pressed_last_frame) {
+            dpadDownTriggeredThisLoop = true;
         }
-        gamepad1_x_pressed_last_frame = gamepad1.x;
+        gamepad1_dpad_down_pressed_last_frame = gamepad1.dpad_down;
 
-        // A Button: Low Position
-        if (gamepad1.a && !gamepad1_a_pressed_last_frame) {
-            armTargetPos = ARM_PRESET_LOW_TICKS;
-            slideTargetPos = SLIDE_PRESET_LOW_TICKS;
-            wristPosition = WRIST_PRESET_LOW_POS;
-            armPresetActivatedThisLoop = true;
-            telemetry.addData("Preset", "Arm/Wrist LOW");
+        boolean dpadLeftTriggeredThisLoop = false;
+        if (gamepad1.dpad_left && !gamepad1_dpad_left_pressed_last_frame) {
+            dpadLeftTriggeredThisLoop = true;
         }
-        gamepad1_a_pressed_last_frame = gamepad1.a;
+        gamepad1_dpad_left_pressed_last_frame = gamepad1.dpad_left;
+
+        boolean dpadRightTriggeredThisLoop = false;
+        if (gamepad1.dpad_right && !gamepad1_dpad_right_pressed_last_frame) {
+            dpadRightTriggeredThisLoop = true;
+        }
+        gamepad1_dpad_right_pressed_last_frame = gamepad1.dpad_right;
+
+        boolean dpadDrivePresetActivatedThisLoop = dpadUpTriggeredThisLoop || dpadDownTriggeredThisLoop ||
+                dpadLeftTriggeredThisLoop || dpadRightTriggeredThisLoop;
 
         // --- Primary Drive Control Logic ---
         if (significantJoystickInput) {
-            // If joystick is active, it overrides any preset move.
-            if (left_front_drive.isBusy() || right_front_drive.isBusy() ||
-                    left_rear_drive.isBusy() || right_rear_drive.isBusy()) {
-                // A preset move was active, stop it immediately.
-                setDriveMotorPower(0.0); // Stop all motors
-                // Mode will be set to RUN_USING_ENCODER below.
-            }
-            // Ensure motors are in RUN_USING_ENCODER for joystick velocity control
+            telemetry.addData("Drive Control", "Joystick Active");
+            // If motors were in RUN_TO_POSITION (e.g., from a finished D-Pad preset),
+            // switch them back to RUN_USING_ENCODER for joystick control.
             if (left_front_drive.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
                 setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                // It's good practice to ensure velocities are zeroed before new ones are applied,
+                // though the setVelocity calls below will effectively do this.
             }
 
-            // --- Joystick Arcade Drive with Velocity Control ---
-            // Your existing arcade drive logic:
-            double leftPowerRaw = joystickDriveInput - joystickTurnInput; // Corrected: was -gamepad1.left_stick_x
-            double rightPowerRaw = joystickDriveInput + joystickTurnInput; // Corrected: was -gamepad1.left_stick_x
+            // Joystick Arcade Drive with Velocity Control
+            double leftPowerRaw = joystickDriveInput - joystickTurnInput;
+            double rightPowerRaw = joystickDriveInput + joystickTurnInput;
+            double denominator = Math.max(Math.abs(leftPowerRaw), Math.abs(rightPowerRaw)); // Simpler normalization for tank/arcade
+            if (denominator > 1.0) { // Normalize only if necessary
+                leftPowerRaw /= denominator;
+                rightPowerRaw /= denominator;
+            }
 
-            double denominator = Math.max(Math.abs(joystickDriveInput) + Math.abs(joystickTurnInput), 1.0);
-            double leftScaledPower = leftPowerRaw / denominator;
-            double rightScaledPower = rightPowerRaw / denominator;
 
-            double finalLeftPower = leftScaledPower * driveSpeed; // Apply turtle mode
-            double finalRightPower = rightScaledPower * driveSpeed; // Apply turtle mode
+            double finalLeftPower = leftPowerRaw * driveSpeed;
+            double finalRightPower = rightPowerRaw * driveSpeed;
 
             double leftTargetVelocity = finalLeftPower * MAX_MOTOR_TICKS_PER_SECOND;
             double rightTargetVelocity = finalRightPower * MAX_MOTOR_TICKS_PER_SECOND;
@@ -325,119 +351,145 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
             right_front_drive.setVelocity(rightTargetVelocity);
             right_rear_drive.setVelocity(rightTargetVelocity);
 
-            telemetry.addData("Control", "Joystick Active");
-            telemetry.addData("Drive Input Raw", "%.2f", joystickDriveInput);
-            telemetry.addData("Turn Input Raw", "%.2f", joystickTurnInput);
-            // telemetry.addData("Left Target TPS", "%.2f", leftTargetVelocity);
-            // telemetry.addData("Right Target TPS", "%.2f", rightTargetVelocity);
+        } else if (dpadDrivePresetActivatedThisLoop) {
+            telemetry.addData("Drive Control", "D-Pad Initiated");
+            // D-Pad preset was triggered THIS loop cycle.
+            // The moveForwardDistance() or turnAngle() methods will handle:
+            // 1. Calculating target ticks
+            // 2. setDriveMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
+            // 3. motor.setTargetPosition(targetTicks);
+            // 4. setDriveMotorPower(SOME_PRESET_SPEED);
 
+            if (dpadUpTriggeredThisLoop) {
+                moveForwardDistance(PRESET_MOVE_DISTANCE);
+                telemetry.addData("D-Pad Action", "Forward");
+            } else if (dpadDownTriggeredThisLoop) {
+                moveForwardDistance(-PRESET_MOVE_DISTANCE);
+                telemetry.addData("D-Pad Action", "Backward");
+            } else if (dpadLeftTriggeredThisLoop) {
+                turnAngle(PRESET_TURN_ANGLE); // Positive angle for turning left
+                telemetry.addData("D-Pad Action", "Turn Left");
+            } else if (dpadRightTriggeredThisLoop) {
+                turnAngle(-PRESET_TURN_ANGLE); // Negative angle for turning right
+                telemetry.addData("D-Pad Action", "Turn Right");
+            }
         } else {
-            // --- No significant joystick input: Process D-Pad Presets or let ongoing preset continue ---
-            boolean presetMoveIsActive = left_front_drive.isBusy() || right_front_drive.isBusy() ||
+            // No significant joystick input AND no D-Pad preset activated THIS loop.
+            // This handles stopping or letting an ONGOING D-Pad move continue.
+
+            boolean presetMoveIsCurrentlyRunning = left_front_drive.isBusy() || right_front_drive.isBusy() ||
                     left_rear_drive.isBusy() || right_rear_drive.isBusy();
 
-            if (presetMoveIsActive) {
-                // A preset move is running. Motors are in RUN_TO_POSITION.
-                // The helper methods (moveForwardDistance, turnAngle) have already set the power.
-                // We just let them continue until they are no longer busy.
-                // Telemetry for the active preset move is handled in the helper methods when initiated.
-                telemetry.addData("Status", "Preset Move Executing");
+            if (presetMoveIsCurrentlyRunning && left_front_drive.getMode() == DcMotor.RunMode.RUN_TO_POSITION) {
+                // A D-Pad initiated preset move is STILL IN PROGRESS from a PREVIOUS loop cycle.
+                telemetry.addData("Drive Control", "D-Pad Executing");
+                // Do nothing to the motors; let RUN_TO_POSITION complete.
             } else {
-                // No preset move is active, and no joystick input.
-                // Ensure motors are in RUN_USING_ENCODER and stopped if they were previously in RUN_TO_POSITION.
+                // Robot Should Be STOPPED:
+                // - Joystick was released, and no D-Pad preset was pressed this cycle.
+                // - A D-Pad preset just finished (areDriveMotorsBusy() is now false).
+                // - Robot is idle at start.
+                telemetry.addData("Drive Control", "Stopping/Idle");
+
+                // Ensure motors are in RUN_USING_ENCODER and set velocities to zero.
                 if (left_front_drive.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
                     setDriveMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    setDriveMotorPower(0.0); // Ensure motors are stopped after a preset finishes
                 }
-                // If already in RUN_USING_ENCODER, ensure power is zero since there's no joystick input.
-                // This prevents drift if joystick was released quickly.
-                else if (left_front_drive.getPower() != 0 || right_front_drive.getPower() != 0) {
-                    setDriveMotorPower(0.0);
-                }
-
-
-                telemetry.addData("Control", "Awaiting D-Pad or Joystick");
-
-                // D-pad Up: Move forward 6 inches
-                if (gamepad1.dpad_up && !gamepad1_dpad_up_pressed_last_frame) {
-                    moveForwardDistance(PRESET_MOVE_DISTANCE);
-                }
-                gamepad1_dpad_up_pressed_last_frame = gamepad1.dpad_up;
-
-                // D-pad Down: Move backward 6 inches
-                if (gamepad1.dpad_down && !gamepad1_dpad_down_pressed_last_frame) {
-                    moveForwardDistance(-PRESET_MOVE_DISTANCE);
-                }
-                gamepad1_dpad_down_pressed_last_frame = gamepad1.dpad_down;
-
-                // D-pad Right: Turn right 22.5 degrees
-                if (gamepad1.dpad_right && !gamepad1_dpad_right_pressed_last_frame) {
-                    turnAngle(-PRESET_TURN_ANGLE); // Negative angle for turning right
-                }
-                gamepad1_dpad_right_pressed_last_frame = gamepad1.dpad_right;
-
-                // D-pad Left: Turn left 22.5 degrees
-                if (gamepad1.dpad_left && !gamepad1_dpad_left_pressed_last_frame) {
-                    turnAngle(PRESET_TURN_ANGLE); // Positive angle for turning left
-                }
-                gamepad1_dpad_left_pressed_last_frame = gamepad1.dpad_left;
+                // Explicitly set velocities to zero to stop.
+                left_front_drive.setVelocity(0);
+                left_rear_drive.setVelocity(0);
+                right_front_drive.setVelocity(0);
+                right_rear_drive.setVelocity(0);
             }
         }
 
-        // --- Claw and Wrist Control ---
+        // --- Arm and Wrist Preset Logic (using Y, X, A buttons) ---
+        boolean armPresetActivatedThisLoop = false; // Reset for arm/wrist manual override logic
+
+        // Y Button: High Position (Latch)
+        if (gamepad1.y && !gamepad1_y_pressed_last_frame) {
+            armTargetPos = ARM_PRESET_HIGH_TICKS;
+            slideTargetPos = SLIDE_PRESET_HIGH_TICKS;
+            wristPosition = WRIST_PRESET_HIGH_POS;
+            armPresetActivatedThisLoop = true;
+            telemetry.addData("Arm/Wrist Preset", "HIGH");
+        }
+        gamepad1_y_pressed_last_frame = gamepad1.y;
+
+        // X Button: Middle Position (Latch)
+        if (gamepad1.x && !gamepad1_x_pressed_last_frame) {
+            armTargetPos = ARM_PRESET_MIDDLE_TICKS;
+            slideTargetPos = SLIDE_PRESET_MIDDLE_TICKS;
+            wristPosition = WRIST_PRESET_MIDDLE_POS;
+            armPresetActivatedThisLoop = true;
+            telemetry.addData("Arm/Wrist Preset", "MIDDLE");
+        }
+        gamepad1_x_pressed_last_frame = gamepad1.x;
+
+        // A Button: Low Position (Latch)
+        if (gamepad1.a && !gamepad1_a_pressed_last_frame) {
+            armTargetPos = ARM_PRESET_LOW_TICKS;
+            slideTargetPos = SLIDE_PRESET_LOW_TICKS;
+            wristPosition = WRIST_PRESET_LOW_POS;
+            armPresetActivatedThisLoop = true;
+            telemetry.addData("Arm/Wrist Preset", "LOW");
+        }
+        gamepad1_a_pressed_last_frame = gamepad1.a;
+
+        // --- Claw Control (Triggers) ---
         clawPosition += (gamepad1.right_trigger - gamepad1.left_trigger) * CLAW_MANUAL_INCREMENT;
-        // Claw limit
-        if (clawPosition > 1) clawPosition = 1;
-        else if (clawPosition < 0) clawPosition = 0;
+        // Claw limits
+        if (clawPosition > 1.0) clawPosition = 1.0;
+        else if (clawPosition < 0.0) clawPosition = 0.0;
         claw.setPosition(clawPosition);
 
+        // --- Manual Wrist Control (Bumpers) - Overridden by presets for one cycle ---
         if (!armPresetActivatedThisLoop) { // Only allow manual wrist if no arm/wrist preset was just hit
             if (gamepad1.right_bumper) wristPosition += WRIST_MANUAL_INCREMENT;
             else if (gamepad1.left_bumper) wristPosition -= WRIST_MANUAL_INCREMENT;
         }
-        //Wrist limit (apply regardless of preset or manual)
-        if (wristPosition > 1) wristPosition = 1;
-        else if (wristPosition < 0) wristPosition = 0;
-        wrist.setPosition(wristPosition); // Set wrist position
+        // Wrist limits (apply regardless of preset or manual)
+        if (wristPosition > 1.0) wristPosition = 1.0;
+        else if (wristPosition < 0.0) wristPosition = 0.0;
+        wrist.setPosition(wristPosition);
 
-        // --- Arm and Slide Control (Your Existing Logic for continuous control) ---
+        // --- Manual Arm and Slide Control (Right Stick) - Overridden by presets for one cycle ---
         // Adjust target positions based on right stick
-        if (!armPresetActivatedThisLoop) {
+        if (!armPresetActivatedThisLoop) { // Only allow manual arm if no arm/wrist preset was just hit
+            // Invert right_stick_y if needed: common for up to be negative
             armTargetPos = armTargetPos - (int) (gamepad1.right_stick_y * ARM_MANUAL_INCREMENT);
         }
+        // Slide control is independent of arm presets
         slideTargetPos = slideTargetPos + (int) (gamepad1.right_stick_x * SLIDE_MANUAL_INCREMENT);
 
-        // Apply limits (optional, if you define ARM_MIN/MAX, SLIDE_MIN/MAX)
-        // if (armTargetPos > ARM_MAX) armTargetPos = ARM_MAX;
-        // if (armTargetPos < ARM_MIN) armTargetPos = ARM_MIN;
-        // if (slideTargetPos > SLIDE_MAX) slideTargetPos = SLIDE_MAX;
-        // if (slideTargetPos < SLIDE_MIN) slideTargetPos = SLIDE_MIN;
+        // Apply Arm/Slide Limits (Define ARM_MIN/MAX_TICKS, SLIDE_MIN/MAX_TICKS if needed)
+        // if (armTargetPos > ARM_MAX_TICKS) armTargetPos = ARM_MAX_TICKS;
+        // if (armTargetPos < ARM_MIN_TICKS) armTargetPos = ARM_MIN_TICKS;
+        // if (slideTargetPos > SLIDE_MAX_TICKS) slideTargetPos = SLIDE_MAX_TICKS;
+        // if (slideTargetPos < SLIDE_MIN_TICKS) slideTargetPos = SLIDE_MIN_TICKS;
 
         arm_motor.setTargetPosition(armTargetPos);
         slide_motor.setTargetPosition(slideTargetPos);
 
         // Set mode and power for arm and slide (always active for RUN_TO_POSITION)
-        // Ensure the motors are in the correct mode if they aren't already.
         if (arm_motor.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
             arm_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
         if (slide_motor.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
             slide_motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         }
-        // Set power for arm and slide. Power should be positive as direction is handled by target position.
-        arm_motor.setPower(ARM_RTP_MAX_SPEED); // Adjust power as needed for arm responsiveness
-        slide_motor.setPower(SLIDE_RTP_MAX_SPEED); // Adjust power as needed for slide responsiveness
+        arm_motor.setPower(ARM_RTP_MAX_SPEED);
+        slide_motor.setPower(SLIDE_RTP_MAX_SPEED);
 
         // --- Telemetry ---
-        // Drive telemetry is handled within the if/else blocks for joystick/preset
         telemetry.addData("Turtle Mode", turtleMode ? "ON" : "OFF");
-        telemetry.addData("Drive Speed Multiplier", "%.2f", driveSpeed);
+        // Drive control telemetry is handled within its specific if/else blocks
         telemetry.addData("Claw Position", "%.2f", clawPosition);
         telemetry.addData("Wrist Position", "%.2f", wristPosition);
-        telemetry.addData("Arm Target Pos", armTargetPos);
-        telemetry.addData("Arm Current Pos", arm_motor.getCurrentPosition());
-        telemetry.addData("Slide Target Pos", slideTargetPos);
-        telemetry.addData("Slide Current Pos", slide_motor.getCurrentPosition());
+        telemetry.addData("Arm Target", armTargetPos);
+        telemetry.addData("Arm Current", arm_motor.getCurrentPosition());
+        telemetry.addData("Slide Target", slideTargetPos);
+        telemetry.addData("Slide Current", slide_motor.getCurrentPosition());
         telemetry.update();
     }
 
@@ -479,7 +531,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         // and the other moves backward by (PI * TRACK_WIDTH_INCHES) / 2.
         // The absolute distance covered by one track for a 360-degree robot turn is (PI * TRACK_WIDTH_INCHES) / 2.
 
-        double distanceOneTrackTravelsFor360Turn = Math.PI * TRACK_WIDTH_INCHES; // Used to be (Math.PI * TRACK_WIDTH_INCHES) / 2.0 but that math seems wrong
+        double distanceOneTrackTravelsFor360Turn = (Math.PI * TRACK_WIDTH_INCHES) / 2.0;
         double ticksFor360TurnOneTrack = distanceOneTrackTravelsFor360Turn * TICKS_PER_INCH;
         double rawTicksPerDegree = ticksFor360TurnOneTrack / 360.0;
 
