@@ -67,14 +67,14 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     // --- Drivetrain Control Parameters ---
     public static final double PRESET_MOVE_SPEED = 0.6;     // Default power/speed for preset forward/backward movements (0.0 to 1.0)
     public static final double PRESET_TURN_SPEED = 0.4;     // Default power/speed for preset turns (0.0 to 1.0)
-    public static final double PRESET_MOVE_DISTANCE = 6.0;  // Default distance for d-pad forward/backward preset (inches)
-    public static final double PRESET_TURN_ANGLE = 22.5;    // Default angle for d-pad turn preset (degrees) TODO: Test by setting this angle much higher, say 720 degrees.
+    public static final double PRESET_MOVE_DISTANCE = 12;  // Default distance for d-pad forward/backward preset (inches)
+    public static final double PRESET_TURN_ANGLE = 45;    // Default angle for d-pad turn preset (degrees) TODO: Test by setting this angle much higher, say 720 degrees.
 
-    public static final double TURN_CALIBRATION_MULTIPLIER = 1.0; // Start at 1.0. This adjustment is to be made after empirical testing to account for track slipping, scrubbing, etc.
+    public static final double TURN_CALIBRATION_MULTIPLIER = 1.1612 * (720.0/710); // Start at 1.0. This adjustment is to be made after empirical testing to account for track slipping, scrubbing, etc.
     // TODO: Increase if robot under-turns.
     // Decrease if robot over-turns.
-    // Example: If robot turns 330deg when 360deg is commanded,
-    // new_multiplier = old_multiplier * (360.0 / 330.0)
+    // Example: If robot turns 620 deg when 720deg is commanded,
+    // new_multiplier = old_multiplier * (720.0 /620.0)
 
     public static boolean turtleMode = false;               // State variable for turtle mode (reduced speed)
     public static final double TURTLE_MODE_SPEED = 0.2;     // Speed multiplier when turtle mode is active
@@ -106,7 +106,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     // --- Claw Control ---
     public static final double CLAW_MANUAL_INCREMENT = 0.03; // Servo position change based on trigger input
     public static double clawPosition = 0.0;                // Target position for the claw servo (0.0 to 1.0)
-    public static final double CLAW_STOWED_POS = 0.55;      // Initial/stowed position for the claw
+    public static final double CLAW_STOWED_POS = 1.0;      // Initial/stowed position for the claw
 
     // --- Arm & Wrist Preset Positions ---
     // High Preset - Tag mailbox with arm and wrist tipped up so the robot can just drive forward until it makes contact
@@ -115,12 +115,12 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
     public static final double WRIST_PRESET_HIGH_POS = 1.0;    // Wrist tipped up
 
     // Middle Preset - Lift ordnance off the ground and hold it high enough to be deposited in containment box
-    public static final int ARM_PRESET_MIDDLE_TICKS = 52;    // TODO: Placeholder - adjust after testing
+    public static final int ARM_PRESET_MIDDLE_TICKS = 220;    // TODO: Placeholder - adjust after testing
     public static final int SLIDE_PRESET_MIDDLE_TICKS = 0;
     public static final double WRIST_PRESET_MIDDLE_POS = WRIST_PRESET_HIGH_POS;
 
     // Low Preset / Intake Preset - Move arm and wrist next to ground to pick up ordnance
-    public static final int ARM_PRESET_LOW_TICKS = -315;       // TODO: Placeholder - adjust after testing
+    public static final int ARM_PRESET_LOW_TICKS = -243;       // TODO: Placeholder - adjust after testing
     public static final int SLIDE_PRESET_LOW_TICKS = 345;
     public static final double WRIST_PRESET_LOW_POS = WRIST_PRESET_HIGH_POS;
 
@@ -162,8 +162,7 @@ public class MorrisSkillsUSAGeminiPresetMoveEdit extends OpMode{
         } else {
             builder.setCamera(BuiltinCameraDirection.BACK);
         }
-        // visionPortal = builder.build(); // Initialize if you are using vision features
-
+        visionPortal = builder.build();
         // Define and Initialize Motors
         left_front_drive = hardwareMap.get(DcMotorEx.class, "left_front_drive");
         left_rear_drive = hardwareMap.get(DcMotorEx.class, "left_rear_drive");
