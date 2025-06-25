@@ -135,7 +135,7 @@ public class AtlantaTankPresetArm extends OpMode{
     public static final double WRIST_PRESET_MIDDLE_POS = WRIST_PRESET_HIGH_POS;
 
     // Low Preset / Intake Preset - Move arm and wrist next to ground to pick up ordnance
-    public static final int ARM_PRESET_LOW_TICKS = -645;       // TODO: Placeholder - adjust after testing
+    public static final int ARM_PRESET_LOW_TICKS = -3;       // TODO: Placeholder - adjust after testing
     public static final int SLIDE_PRESET_LOW_TICKS = 260;
     public static final double WRIST_PRESET_LOW_POS = WRIST_PRESET_HIGH_POS;
 
