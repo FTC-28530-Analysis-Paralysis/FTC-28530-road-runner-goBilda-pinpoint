@@ -112,10 +112,10 @@ public class AtlantaTankPresetArm extends OpMode{
     public static final int ARM_MANUAL_INCREMENT = 15;
     public static int armTargetPos = 0;
     public static final double SLIDE_RTP_MAX_SPEED =  0.75 ;   // Max speed/power for slide during RUN_TO_POSITION
-    public static final int SLIDE_MANUAL_INCREMENT = 100;
+    public static final int SLIDE_MANUAL_INCREMENT = 50;
     public static int slideTargetPos = 0; // Target position for the slide motor (in encoder ticks)
     public static double clawPosition = 0.0;
-    public static final double CLAW_STOWED = 0;
+    public static final double CLAW_STOWED = 1;
     public static final double WRIST_MANUAL_INCREMENT = 0.01;
     public static double wristPosition = 0.0;
     public static final double WRIST_FOLDED = 0;
@@ -125,18 +125,18 @@ public class AtlantaTankPresetArm extends OpMode{
 
     // --- Arm & Wrist Preset Positions ---
     // High Preset - Tag mailbox with arm and wrist tipped up so the robot can just drive forward until it makes contact
-    public static final int ARM_PRESET_HIGH_TICKS = 900;
+    public static final int ARM_PRESET_HIGH_TICKS = 400;
     public static final int SLIDE_PRESET_HIGH_TICKS = 0;
     public static final double WRIST_PRESET_HIGH_POS = 1.0;    // Wrist tipped up
 
     // Middle Preset - Lift ordnance off the ground and hold it high enough to be deposited in containment box
-    public static final int ARM_PRESET_MIDDLE_TICKS = 52;    // TODO: Placeholder - adjust after testing
+    public static final int ARM_PRESET_MIDDLE_TICKS = -100;    // TODO: Placeholder - adjust after testing
     public static final int SLIDE_PRESET_MIDDLE_TICKS = 0;
     public static final double WRIST_PRESET_MIDDLE_POS = WRIST_PRESET_HIGH_POS;
 
     // Low Preset / Intake Preset - Move arm and wrist next to ground to pick up ordnance
-    public static final int ARM_PRESET_LOW_TICKS = -315;       // TODO: Placeholder - adjust after testing
-    public static final int SLIDE_PRESET_LOW_TICKS = 345;
+    public static final int ARM_PRESET_LOW_TICKS = -645;       // TODO: Placeholder - adjust after testing
+    public static final int SLIDE_PRESET_LOW_TICKS = 260;
     public static final double WRIST_PRESET_LOW_POS = WRIST_PRESET_HIGH_POS;
 
 //--------------------------------------------------------------------------------------------------
